@@ -22,6 +22,12 @@ public extension NSNotification.Name {
 
 public typealias UserInfo = (address: String, paymentAddress: String?, avatarPath: String?, name: String?, username: String?, isLocal: Bool)
 
+public struct Category {
+    let name: String
+    let tag: String
+    let id: Int
+}
+
 public class TokenUser: NSObject, NSCoding {
 
     struct Constants {
@@ -33,6 +39,7 @@ public class TokenUser: NSObject, NSCoding {
         static let about = "about"
         static let avatar = "avatar"
         static let isApp = "is_app"
+        static let categories = "categories"
         static let verified = "verified"
     }
 
@@ -114,6 +121,7 @@ public class TokenUser: NSObject, NSCoding {
             Constants.name: self.name,
             Constants.avatar: self.avatarPath,
             Constants.isApp: self.isApp,
+            Constants.categories: self.categories,
             Constants.verified: self.verified,
         ]
     }
@@ -165,6 +173,7 @@ public class TokenUser: NSObject, NSCoding {
         self.about = json[Constants.about] as? String ?? self.about
         self.avatarPath = json[Constants.avatar] as? String ?? self.avatarPath
         self.isApp = json[Constants.isApp] as? Bool ?? self.isApp
+        self.category = json[Constants.categories] as? String ?? self.category
 
         self.verified = json[Constants.verified] as? Bool ?? self.verified
 

@@ -39,19 +39,11 @@ public final class Yap: NSObject, Singleton {
         let keychain = KeychainSwift()
         var databasePassword: Data
 
-        if let dbPwd = keychain.getData("DBPWD") {
-            options.cipherKeyBlock = {
-                dbPwd
-            }
+        let dbPwd = keychain.getData("DBPWD") ?? Randomness.generateRandomBytes(60).base64EncodedString().data(using: .utf8)!
+        keychain.set(dbPwd, forKey: "DBPWD")
 
-            databasePassword = dbPwd
-        } else {
-            databasePassword = Randomness.generateRandomBytes(60).base64EncodedString().data(using: .utf8)!
-
-            keychain.set(databasePassword, forKey: "DBPWD")
-            options.cipherKeyBlock = {
-                databasePassword
-            }
+        options.cipherKeyBlock = {
+            KeychainSwift().getData("DBPWD")!
         }
 
         self.databasePassword = databasePassword

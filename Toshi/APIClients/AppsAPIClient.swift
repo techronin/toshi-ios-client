@@ -33,7 +33,6 @@ public class AppsAPIClient: NSObject, CacheExpiryDefault {
         DispatchQueue.global(qos: .userInitiated).async {
             self.teapot.get("/v1/apps/featured?limit=32") { (result: NetworkResult) in
                 switch result {
-
                 case .success(let json, let response):
                     guard let json = json?.dictionary else { completion(nil, nil)
                         return

@@ -82,14 +82,11 @@ final class AvatarManager: NSObject, CacheExpiryDefault {
 
     private func downloadAvatar(for path: String) {
         guard self.imageCache.object(forKey: path) == nil else {
-            print(" v --- Found the object, continuing")
             return
         }
 
-        print(">>> Downloading for :\(path)")
-
         self.downloadAvatar(path: path) { _ in
-            print(" *****  Downloaded for :\(path)")
+
         }
     }
 
