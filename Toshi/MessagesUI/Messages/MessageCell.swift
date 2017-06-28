@@ -153,9 +153,17 @@ class MessageCell: UICollectionViewCell {
 
     var isActionable: Bool? {
         didSet {
-            // TODO: implement actionable state of the cell.
+            self.displayPaymentResponseIfNeeded()
         }
     }
+    
+    private lazy var paymentStatusLabel: UILabel = {
+        let label = UILabel(withAutoLayout: true)
+        label.textColor = Theme.mediumTextColor
+        label.font = UIFont.systemFont(ofSize: 14.0)
+        
+        return label
+    }()
 
     private lazy var leftSpacing = UILayoutGuide()
     private lazy var rightSpacing = UILayoutGuide()
@@ -390,6 +398,14 @@ class MessageCell: UICollectionViewCell {
         self.buttons[0].topToBottom(of: self.verticalGuides[3])
         self.buttons[0].bottomToTop(of: self.buttons[1])
         self.buttons[1].bottom(to: self.container)
+        
+        self.container.addSubview(self.paymentStatusLabel)
+        self.paymentStatusLabel.set(height: 16.0)
+        self.paymentStatusLabel.left(to: self.container, offset: 16.0)
+        self.paymentStatusLabel.right(to: self.container, offset: -16.0)
+        self.paymentStatusLabel.bottomAnchor.constraint(equalTo: self.container.bottomAnchor, constant: -16.0).isActive = true
+        
+        self.paymentStatusLabel.isHidden = true
 
         self.verticalGuides[0].topToBottom(of: self.imageView)
         self.verticalGuides[0].bottomToTop(of: self.titleLabel)
@@ -470,6 +486,42 @@ class MessageCell: UICollectionViewCell {
         let scale = min(maxSize.width / image.size.width, maxSize.height / image.size.height)
 
         return CGSize(width: image.size.width * scale, height: image.size.height * scale)
+    }
+    
+    fileprivate func displayPaymentResponseIfNeeded() {
+        guard self.message?.type == .paymentRequest || self.message?.type == .payment else { return }
+        guard self.isActionable == false else { return }
+        
+        for button in self.buttons {
+            button.set(height: 0.1)
+            button.isHidden = true
+        }
+        
+        if let signalMessage = self.message?.signalMessage as TSMessage? {
+            var text = ""
+            
+            switch signalMessage.paymentState {
+            case .pendingConfirmation:
+                text = "Requested"
+            case .rejected:
+                text = "Rejected"
+            case .paid:
+                text = "Approved"
+            case .failed:
+                text = "Failed"
+            default: break
+            }
+            
+            self.paymentStatusLabel.text = text
+        }
+        
+        self.paymentStatusLabel.isHidden = false
+        
+        self.container.set(height: 170.0)
+        self.verticalGuidesConstraints[3].constant = 40
+        
+        self.setNeedsLayout()
+        self.layoutIfNeeded()
     }
 
     func size(for width: CGFloat) -> CGSize {
