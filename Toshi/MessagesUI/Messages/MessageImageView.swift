@@ -7,8 +7,10 @@ typealias MessageImageViewImageTap = () -> Void
 class MessageImageView: UIImageView {
 
     var imageTap: MessageImageViewImageTap?
-
+    
     var widthConstraint: NSLayoutConstraint?
+    
+    var heightConstraint: NSLayoutConstraint?
 
     let totalHorizontalMargin: CGFloat = 123
 
@@ -36,6 +38,7 @@ class MessageImageView: UIImageView {
         self.addGestureRecognizer(self.tapGestureRecognizer)
 
         self.widthConstraint = width(UIScreen.main.bounds.width - self.totalHorizontalMargin, priority: .high)
+        self.heightConstraint = height(0, isActive: false)
     }
 
     func tap(_: UITapGestureRecognizer) {

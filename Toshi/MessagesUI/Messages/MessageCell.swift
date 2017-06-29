@@ -43,8 +43,8 @@ class MessageCell: UICollectionViewCell {
         view.numberOfLines = 0
         view.font = self.titleFont
 
-        view.setContentCompressionResistancePriority(UILayoutPriorityDefaultHigh, for: .vertical)
-        view.setContentCompressionResistancePriority(UILayoutPriorityDefaultHigh, for: .horizontal)
+        view.setCompressionResistance(.high, for: .vertical)
+        view.setCompressionResistance(.high, for: .horizontal)
 
         return view
     }()
@@ -63,8 +63,8 @@ class MessageCell: UICollectionViewCell {
         view.textContainer.lineFragmentPadding = 0
         view.textContainer.maximumNumberOfLines = 0
 
-        view.setContentCompressionResistancePriority(UILayoutPriorityDefaultHigh, for: .vertical)
-        view.setContentCompressionResistancePriority(UILayoutPriorityDefaultHigh, for: .horizontal)
+        view.setCompressionResistance(.high, for: .vertical)
+        view.setCompressionResistance(.high, for: .horizontal)
 
         return view
     }()
@@ -75,8 +75,8 @@ class MessageCell: UICollectionViewCell {
         view.font = self.subtitleFont
         view.textColor = Theme.tintColor
 
-        view.setContentCompressionResistancePriority(UILayoutPriorityDefaultHigh, for: .vertical)
-        view.setContentCompressionResistancePriority(UILayoutPriorityDefaultHigh, for: .horizontal)
+        view.setCompressionResistance(.high, for: .vertical)
+        view.setCompressionResistance(.high, for: .horizontal)
 
         return view
     }()
@@ -91,22 +91,15 @@ class MessageCell: UICollectionViewCell {
         return view
     }()
 
-    private let container = UIView()
-
-    private let avatar = UIImageView()
-
-    lazy var statusLabel: UILabel = {
-        let view = UILabel()
-        view.numberOfLines = 0
-        view.font = self.statusFont
-        view.textColor = Theme.darkTextColor
-        view.textAlignment = .center
-
-        view.setContentCompressionResistancePriority(UILayoutPriorityDefaultHigh, for: .vertical)
-
+    private let container: UIView = {
+        let view = UIView()
+        view.setHugging(.high, for: .vertical)
+        
         return view
     }()
 
+    private let avatar = UIImageView()
+    
     private let usernameDetector = try! NSRegularExpression(pattern: " ?(@[a-zA-Z][a-zA-Z0-9_]{2,59}) ?", options: [.caseInsensitive, .useUnicodeWordBoundaries])
 
     private lazy var avatarLeft: NSLayoutConstraint = {
@@ -126,19 +119,11 @@ class MessageCell: UICollectionViewCell {
             guide.height(0, priority: .high)
         }
     }()
-
-    private lazy var bottomGuide: UILayoutGuide = {
-        UILayoutGuide()
-    }()
-
+    
     private lazy var textViewHeightConstraint: NSLayoutConstraint = {
         self.textView.height(0, priority: .high, isActive: false)
     }()
-
-    private lazy var bottomConstraint: NSLayoutConstraint = {
-        self.bottomGuide.height(0, priority: .high)
-    }()
-
+    
     private lazy var textLeftConstraints: NSLayoutConstraint = {
         self.textView.left(to: self.container, offset: self.horizontalMargin, isActive: false)
     }()
@@ -150,17 +135,11 @@ class MessageCell: UICollectionViewCell {
     private lazy var buttons: [MessageCellButton] = {
         [MessageCellButton(), MessageCellButton()]
     }()
-
-    var isActionable: Bool? {
-        didSet {
-            self.displayPaymentResponseIfNeeded()
-        }
-    }
     
     private lazy var paymentStatusLabel: UILabel = {
         let label = UILabel(withAutoLayout: true)
         label.textColor = Theme.mediumTextColor
-        label.font = UIFont.systemFont(ofSize: 14.0)
+        label.font = UIFont.systemFont(ofSize: 14)
         
         return label
     }()
@@ -178,15 +157,20 @@ class MessageCell: UICollectionViewCell {
     var message: MessageModel? {
         didSet {
             guard let message = self.message else { return }
-
-            self.isActionable = message.isActionable
-
-            if let models = message.buttonModels {
-                self.buttons[0].model = models[0]
-                self.buttons[1].model = models[1]
+            
+            if let models = message.buttonModels, message.isActionable {
+                
+                for (i, model) in models.enumerated() {
+                    if buttons.count > i {
+                        buttons[i].model = model
+                    }
+                }
+                
             } else {
-                self.buttons[0].model = nil
-                self.buttons[1].model = nil
+                
+                for button in buttons {
+                    button.model = nil
+                }
             }
 
             if let image = message.image {
@@ -199,9 +183,7 @@ class MessageCell: UICollectionViewCell {
             self.textView.text = message.text
             self.textView.font = textFont
             self.subtitleLabel.text = message.subtitle
-
-            self.bottomConstraint.constant = 0
-
+            
             self.container.backgroundColor = message.isOutgoing ? Theme.outgoingMessageBackgroundColor : Theme.incomingMessageBackgroundColor
             self.titleLabel.textColor = message.isOutgoing ? Theme.lightTextColor : Theme.darkTextColor
             self.textView.textColor = message.isOutgoing ? Theme.lightTextColor : Theme.darkTextColor
@@ -247,8 +229,7 @@ class MessageCell: UICollectionViewCell {
                 self.titleLabel.textColor = Theme.tintColor
                 self.subtitleLabel.textColor = Theme.mediumTextColor
                 self.textView.textColor = Theme.darkTextColor
-                self.statusLabel.textColor = Theme.mediumTextColor
-
+                
                 self.container.layer.borderColor = UIColor.black.withAlphaComponent(0.1).cgColor
                 self.container.layer.borderWidth = 1
                 self.container.layer.cornerRadius = 16
@@ -277,21 +258,11 @@ class MessageCell: UICollectionViewCell {
             }
 
             self.avatar.image = UIImage(named: "Avatar")
-            self.statusLabel.text = nil
-
+            
             if let title = titleLabel.text, !title.isEmpty {
                 self.verticalGuidesConstraints[0].constant = 10
             }
-
-            if let status = message.status, message.type == .status, case .neutral(let s) = status {
-                self.statusLabel.text = s
-
-                self.verticalGuidesConstraints[2].constant = 0
-                self.verticalGuidesConstraints[3].constant = 0
-                self.bottomConstraint.constant = 10
-                self.avatar.image = nil
-            }
-
+            
             self.applyCornersRadius()
 
             if !self.frame.isEmpty {
@@ -314,7 +285,27 @@ class MessageCell: UICollectionViewCell {
             } else {
                 self.imageView.widthConstraint?.isActive = false
             }
-
+            
+            switch message.signalMessage.paymentState {
+            case .pendingConfirmation:
+                self.paymentStatusLabel.text = "Requested"
+            case .rejected:
+                self.paymentStatusLabel.text = "Rejected"
+            case .paid:
+                self.paymentStatusLabel.text = "Approved"
+            case .failed:
+                self.paymentStatusLabel.text = "Failed"
+            default:
+                self.paymentStatusLabel.text = nil
+            }
+            
+            if self.paymentStatusLabel.text != nil {
+                self.verticalGuidesConstraints[3].constant = 40
+                self.imageView.heightConstraint?.isActive = true
+            } else {
+                self.imageView.heightConstraint?.isActive = false
+            }
+            
             if !frame.isEmpty {
                 self.setNeedsLayout()
                 self.layoutIfNeeded()
@@ -335,19 +326,15 @@ class MessageCell: UICollectionViewCell {
     }
 
     private func addSubviewsAndConstraints() {
-        self.contentView.addSubview(self.statusLabel)
-        self.statusLabel.left(to: self.contentView)
-        self.statusLabel.right(to: self.contentView)
-
         self.contentView.addLayoutGuide(self.leftSpacing)
         self.leftSpacing.top(to: self.contentView)
         self.leftSpacing.left(to: self.contentView, offset: 10)
-        self.leftSpacing.bottomToTop(of: self.statusLabel)
+        self.leftSpacing.bottom(to: self.contentView)
 
         self.contentView.addLayoutGuide(self.rightSpacing)
         self.rightSpacing.top(to: self.contentView)
         self.rightSpacing.right(to: self.contentView, offset: -10)
-        self.rightSpacing.bottomToTop(of: self.statusLabel)
+        self.rightSpacing.bottom(to: self.contentView)
 
         self.leftWidthSmall.isActive = false
         self.rightWidthBig.isActive = false
@@ -357,12 +344,12 @@ class MessageCell: UICollectionViewCell {
         self.contentView.addSubview(self.container)
         self.container.top(to: self.contentView)
         self.container.leftToRight(of: self.leftSpacing)
-        self.container.bottomToTop(of: self.statusLabel)
+        self.container.bottom(to: self.contentView)
         self.container.rightToLeft(of: self.rightSpacing)
 
         self.contentView.addSubview(self.avatar)
         self.avatar.size(CGSize(width: 32, height: 32))
-        self.avatar.bottomToTop(of: self.statusLabel)
+        self.avatar.bottom(to: self.contentView)
         self.avatarLeft.isActive = true
 
         self.container.addSubview(self.imageView)
@@ -394,18 +381,15 @@ class MessageCell: UICollectionViewCell {
             guide.left(to: self.container)
             guide.right(to: self.container)
         }
-
-        self.buttons[0].topToBottom(of: self.verticalGuides[3])
+        
         self.buttons[0].bottomToTop(of: self.buttons[1])
         self.buttons[1].bottom(to: self.container)
         
         self.container.addSubview(self.paymentStatusLabel)
-        self.paymentStatusLabel.set(height: 16.0)
-        self.paymentStatusLabel.left(to: self.container, offset: 16.0)
-        self.paymentStatusLabel.right(to: self.container, offset: -16.0)
-        self.paymentStatusLabel.bottomAnchor.constraint(equalTo: self.container.bottomAnchor, constant: -16.0).isActive = true
-        
-        self.paymentStatusLabel.isHidden = true
+        self.paymentStatusLabel.height(40)
+        self.paymentStatusLabel.left(to: self.container, offset: 16)
+        self.paymentStatusLabel.right(to: self.container, offset: -16)
+        self.paymentStatusLabel.bottom(to: self.container)
 
         self.verticalGuides[0].topToBottom(of: self.imageView)
         self.verticalGuides[0].bottomToTop(of: self.titleLabel)
@@ -414,12 +398,7 @@ class MessageCell: UICollectionViewCell {
         self.verticalGuides[2].topToBottom(of: self.subtitleLabel)
         self.verticalGuides[2].bottomToTop(of: self.textView)
         self.verticalGuides[3].topToBottom(of: self.textView)
-
-        self.contentView.addLayoutGuide(self.bottomGuide)
-        self.bottomGuide.topToBottom(of: self.statusLabel)
-        self.bottomGuide.left(to: self.contentView)
-        self.bottomGuide.bottom(to: self.contentView)
-        self.bottomGuide.right(to: self.contentView)
+        self.verticalGuides[3].bottomToTop(of: self.buttons[0])
     }
 
     func buttonPressed(_ button: MessageCellButton) {
@@ -487,42 +466,6 @@ class MessageCell: UICollectionViewCell {
 
         return CGSize(width: image.size.width * scale, height: image.size.height * scale)
     }
-    
-    fileprivate func displayPaymentResponseIfNeeded() {
-        guard self.message?.type == .paymentRequest || self.message?.type == .payment else { return }
-        guard self.isActionable == false else { return }
-        
-        for button in self.buttons {
-            button.set(height: 0.1)
-            button.isHidden = true
-        }
-        
-        if let signalMessage = self.message?.signalMessage as TSMessage? {
-            var text = ""
-            
-            switch signalMessage.paymentState {
-            case .pendingConfirmation:
-                text = "Requested"
-            case .rejected:
-                text = "Rejected"
-            case .paid:
-                text = "Approved"
-            case .failed:
-                text = "Failed"
-            default: break
-            }
-            
-            self.paymentStatusLabel.text = text
-        }
-        
-        self.paymentStatusLabel.isHidden = false
-        
-        self.container.set(height: 170.0)
-        self.verticalGuidesConstraints[3].constant = 40
-        
-        self.setNeedsLayout()
-        self.layoutIfNeeded()
-    }
 
     func size(for width: CGFloat) -> CGSize {
         guard let message = message else { return .zero }
@@ -552,8 +495,13 @@ class MessageCell: UICollectionViewCell {
         }
 
         if let models = message.buttonModels {
-            totalHeight += models[0].title.height(withConstrainedWidth: maxWidth, font: Theme.medium(size: 15)) + 30
-            totalHeight += models[1].title.height(withConstrainedWidth: maxWidth, font: Theme.medium(size: 15)) + 30
+            
+            if message.isActionable {
+                totalHeight += models[0].title.height(withConstrainedWidth: maxWidth, font: Theme.medium(size: 15)) + 30
+                totalHeight += models[1].title.height(withConstrainedWidth: maxWidth, font: Theme.medium(size: 15)) + 30
+            } else {
+                totalHeight += 40
+            }
         }
 
         var extraMargin: CGFloat = message.imageOnly ? 0 : 10

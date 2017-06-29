@@ -69,6 +69,18 @@ class MessageCellButton: UIControl {
 
         addLayoutGuide(self.horizontalCenter)
         self.horizontalCenter.centerX(to: self)
+        
+        for guide in self.verticalGuides {
+            self.addLayoutGuide(guide)
+            guide.left(to: self)
+            guide.right(to: self)
+        }
+        
+        self.verticalGuides[0].top(to: self)
+        self.verticalGuides[0].bottomToTop(of: self.horizontalCenter)
+        
+        self.verticalGuides[1].topToBottom(of: self.horizontalCenter)
+        self.verticalGuides[1].bottom(to: self)
 
         addSubview(self.icon)
         self.icon.top(to: self.horizontalCenter)
@@ -80,18 +92,6 @@ class MessageCellButton: UIControl {
         self.titleLabel.leftToRight(of: self.icon, offset: 5)
         self.titleLabel.bottom(to: self.horizontalCenter)
         self.titleLabel.right(to: self.horizontalCenter)
-
-        for guide in self.verticalGuides {
-            self.addLayoutGuide(guide)
-            guide.left(to: self)
-            guide.right(to: self)
-        }
-
-        self.verticalGuides[0].top(to: self)
-        self.verticalGuides[0].bottomToTop(of: self.horizontalCenter)
-
-        self.verticalGuides[1].topToBottom(of: self.horizontalCenter)
-        self.verticalGuides[1].bottom(to: self)
 
         addSubview(self.divider)
         self.divider.left(to: self)

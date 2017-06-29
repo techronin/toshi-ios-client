@@ -70,7 +70,7 @@ class ChatController: MessagesCollectionViewController {
     fileprivate var messages = [Message]() {
         didSet {
             self.calculatedSizeCache.sizes.removeAll()
-
+            
             for message in self.messages {
                 if let paymentRequest = message.sofaWrapper as? SofaPaymentRequest {
                     message.fiatValueString = EthereumConverter.fiatValueStringWithCode(forWei: paymentRequest.value)
@@ -102,15 +102,26 @@ class ChatController: MessagesCollectionViewController {
             self.messageModels = self.visibleMessages.flatMap { message in
                 MessageModel(message: message)
             }
-
+            
             // Only animate if we're adding one message, for bulk-insert we want them instant.
             // let isAnimated = displayables.count == 1
-            if displayables.count == 1 {
+            
+            if displayables.count == 0 {
+                
+                collectionView.performBatchUpdates({
+                    self.collectionView.reloadItems(at: self.collectionView.indexPaths)
+                }, completion: nil)
+                
+            } else if displayables.count == 1 {
                 let indexPath = IndexPath(item: self.visibleMessages.count - 1, section: 0)
-                self.collectionView.insertItems(at: [indexPath])
+                
+                collectionView.performBatchUpdates({
+                    self.collectionView.insertItems(at: [indexPath])
+                }, completion: nil)
+                
                 self.scrollToBottom(animated: true)
             } else {
-                self.collectionView.reloadData()
+                collectionView.reloadData()
                 self.scrollToBottom(animated: false)
             }
         }
@@ -701,23 +712,29 @@ extension ChatController: MessageCellDelegate {
     }
 
     func didTapRejectButton(_ cell: MessageCell) {
-        guard var message = cell.message else { return }
-        message.isActionable = false
-        cell.isActionable = false
-
-        guard let interaction = message.signalMessage else { return }
-        interaction.paymentState = .rejected
-        interaction.save()
+        guard let messageModel = cell.message else { return }
+        
+        messages.filter { message in
+            messageModel.signalMessage == message.signalMessage
+            }.forEach { message in
+                message.isActionable = false
+                message.signalMessage.paymentState = .rejected
+                message.signalMessage.save()
+        }
+        
+        let messagesCopy = self.messages
+        self.messages = messagesCopy
     }
 
     func didTapApproveButton(_ cell: MessageCell) {
-        guard var message = cell.message else { return }
-        message.isActionable = false
-        cell.isActionable = false
-
-        guard let interaction = message.signalMessage else { return }
-        interaction.paymentState = .pendingConfirmation
-        interaction.save()
+        guard let messageModel = cell.message else { return }
+        
+        guard let message = messages.filter({ m in
+            messageModel.signalMessage == m.signalMessage
+        }).first else { return }
+        
+        message.signalMessage.paymentState = .pendingConfirmation
+        message.signalMessage.save()
 
         guard let paymentRequest = message.sofaWrapper as? SofaPaymentRequest else {
             let alert = UIAlertController.dismissableAlert(title: "Somwthing went wrong")
@@ -764,10 +781,9 @@ extension ChatController: MessageCellDelegate {
                 } else if let json = json?.dictionary {
                     // update payment request message
                     message.isActionable = false
-
-                    guard let interaction = message.signalMessage else { return }
-                    interaction.paymentState = .pendingConfirmation
-                    interaction.save()
+                    
+                    message.signalMessage.paymentState = .paid
+                    message.signalMessage.save()
 
                     // send payment message
                     guard let txHash = json["tx_hash"] as? String else { fatalError("Error recovering transaction hash.") }
@@ -1097,9 +1113,7 @@ extension ChatController: ChatsFloatingHeaderViewDelegate {
 extension ChatController: PaymentSendControllerDelegate {
 
     func paymentSendControllerDidFinish(valueInWei: NSDecimalNumber?) {
-        defer {
-            self.dismiss(animated: true)
-        }
+        self.dismiss(animated: true)
 
         guard let value = valueInWei else {
             return
@@ -1128,9 +1142,7 @@ extension ChatController: PaymentSendControllerDelegate {
 extension ChatController: PaymentRequestControllerDelegate {
 
     func paymentRequestControllerDidFinish(valueInWei: NSDecimalNumber?) {
-        defer {
-            self.dismiss(animated: true)
-        }
+        self.dismiss(animated: true)
 
         guard let valueInWei = valueInWei else {
             return

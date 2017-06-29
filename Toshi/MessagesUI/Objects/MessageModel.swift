@@ -55,8 +55,8 @@ struct MessageModel {
 
     let buttonModels: [MessageButtonModel]?
     var status: Status?
-    var isActionable: Bool?
-    var signalMessage: TSMessage?
+    var isActionable: Bool
+    var signalMessage: TSMessage
     var sofaWrapper: SofaWrapper?
 
     public var fiatValueString: String?
@@ -113,7 +113,7 @@ struct MessageModel {
 
         self.status = nil
 
-        self.isActionable = self.buttonModels != nil
+        self.isActionable = message.isActionable
     }
 
     var imageOnly: Bool {
