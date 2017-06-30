@@ -17,7 +17,8 @@
 import Foundation
 import NoChat
 
-open class Message: NSObject, NOCChatItem {
+// TODO: make message conform to hashable instead of inheriting from NSObject
+open class Message: NSObject {
 
     public var fiatValueString: String?
     public var ethereumValueString: String?
@@ -81,7 +82,8 @@ open class Message: NSObject, NOCChatItem {
     public var date: Date
 
     public var isOutgoing: Bool = true
-    public var isActionable: Bool
+
+    private(set) var isActionable: Bool
 
     public var deliveryStatus: TSOutgoingMessageState {
         return (self.signalMessage as? TSOutgoingMessage)?.messageState ?? .attemptingOut
@@ -136,7 +138,5 @@ open class Message: NSObject, NOCChatItem {
         self.signalMessage = signalMessage
         self.date = date ?? Date()
         self.isActionable = shouldProcess && !isOutgoing && (sofaWrapper?.type == .paymentRequest)
-
-        super.init()
     }
 }

@@ -161,14 +161,14 @@ class MessageCell: UICollectionViewCell {
             if let models = message.buttonModels, message.isActionable {
                 
                 for (i, model) in models.enumerated() {
-                    if buttons.count > i {
-                        buttons[i].model = model
+                    if self.buttons.count > i {
+                        self.buttons[i].model = model
                     }
                 }
                 
             } else {
                 
-                for button in buttons {
+                for button in self.buttons {
                     button.model = nil
                 }
             }
@@ -181,7 +181,7 @@ class MessageCell: UICollectionViewCell {
 
             self.titleLabel.text = message.title
             self.textView.text = message.text
-            self.textView.font = textFont
+            self.textView.font = self.textFont
             self.subtitleLabel.text = message.subtitle
             
             self.container.backgroundColor = message.isOutgoing ? Theme.outgoingMessageBackgroundColor : Theme.incomingMessageBackgroundColor
@@ -207,9 +207,9 @@ class MessageCell: UICollectionViewCell {
             }
 
             if let text = message.text, !text.isEmpty {
-                textViewHeightConstraint.isActive = false
+                self.textViewHeightConstraint.isActive = false
             } else {
-                textViewHeightConstraint.isActive = true
+                self.textViewHeightConstraint.isActive = true
             }
 
             if message.type == .paymentRequest || message.type == .payment {
@@ -287,11 +287,9 @@ class MessageCell: UICollectionViewCell {
             }
             
             switch message.signalMessage.paymentState {
-            case .pendingConfirmation:
-                self.paymentStatusLabel.text = "Requested"
             case .rejected:
                 self.paymentStatusLabel.text = "Rejected"
-            case .paid:
+            case .approved:
                 self.paymentStatusLabel.text = "Approved"
             case .failed:
                 self.paymentStatusLabel.text = "Failed"
@@ -306,7 +304,7 @@ class MessageCell: UICollectionViewCell {
                 self.imageView.heightConstraint?.isActive = false
             }
             
-            if !frame.isEmpty {
+            if !self.frame.isEmpty {
                 self.setNeedsLayout()
                 self.layoutIfNeeded()
             }
@@ -468,9 +466,9 @@ class MessageCell: UICollectionViewCell {
     }
 
     func size(for width: CGFloat) -> CGSize {
-        guard let message = message else { return .zero }
+        guard let message = self.message else { return .zero }
 
-        let maxWidth: CGFloat = width - totalHorizontalMargin
+        let maxWidth: CGFloat = width - self.totalHorizontalMargin
         var totalHeight: CGFloat = 0
         var totalMargin: CGFloat = 0
 
@@ -480,23 +478,24 @@ class MessageCell: UICollectionViewCell {
         }
 
         if let title = message.title, !title.isEmpty {
-            totalHeight += title.height(withConstrainedWidth: maxWidth, font: titleFont)
+            totalHeight += title.height(withConstrainedWidth: maxWidth, font: self.titleFont)
             totalMargin += 10
         }
 
         if let subtitle = message.subtitle, !subtitle.isEmpty {
-            totalHeight += subtitle.height(withConstrainedWidth: maxWidth, font: subtitleFont)
+            totalHeight += subtitle.height(withConstrainedWidth: maxWidth, font: self.subtitleFont)
             totalMargin += 5
         }
 
         if let text = message.text, !text.isEmpty {
-            totalHeight += text.height(withConstrainedWidth: maxWidth, font: textFont)
+            totalHeight += text.height(withConstrainedWidth: maxWidth, font: self.textFont)
             totalMargin += 10
         }
 
         if let models = message.buttonModels {
-            
-            if message.isActionable {
+            let shouldShowButtons = (message.signalMessage.paymentState == .none)
+
+            if message.isActionable && shouldShowButtons {
                 totalHeight += models[0].title.height(withConstrainedWidth: maxWidth, font: Theme.medium(size: 15)) + 30
                 totalHeight += models[1].title.height(withConstrainedWidth: maxWidth, font: Theme.medium(size: 15)) + 30
             } else {
@@ -514,7 +513,7 @@ class MessageCell: UICollectionViewCell {
         var height = totalHeight + totalMargin + extraMargin
 
         if let status = message.status, message.type == .status, case .neutral(let s) = status {
-            height = s.height(withConstrainedWidth: width, font: statusFont) + 20
+            height = s.height(withConstrainedWidth: width, font: self.statusFont) + 20
         }
 
         return CGSize(width: ceil(width), height: ceil(height))

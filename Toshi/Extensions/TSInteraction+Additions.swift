@@ -20,11 +20,10 @@ private var stateAssociationKey: UInt8 = 0
 extension TSInteraction {
 
     public enum PaymentState: Int {
-        case none = 0
-        case pendingConfirmation = 1
-        case failed = 2
-        case rejected = 3
-        case paid = 4
+        case none
+        case failed
+        case rejected
+        case approved
     }
 
     public var paymentStateRaw: Int {

@@ -81,8 +81,10 @@ class ChatController: MessagesCollectionViewController {
                 }
             }
 
-            let current = Set(self.messages)
-            let previous = Set(oldValue)
+
+            let current = Set<Message>(self.messages)
+            let previous = Set<Message>(oldValue)
+
             let new = current.subtracting(previous).sorted { (message1, message2) -> Bool in
                 // so far the only case where this is true to the milisecond is when
                 // signal splits a media message into two, with the same dates. That means that one of them has attachments
@@ -108,20 +110,20 @@ class ChatController: MessagesCollectionViewController {
             
             if displayables.count == 0 {
                 
-                collectionView.performBatchUpdates({
+                self.collectionView.performBatchUpdates({
                     self.collectionView.reloadItems(at: self.collectionView.indexPaths)
                 }, completion: nil)
                 
             } else if displayables.count == 1 {
                 let indexPath = IndexPath(item: self.visibleMessages.count - 1, section: 0)
                 
-                collectionView.performBatchUpdates({
+                self.collectionView.performBatchUpdates({
                     self.collectionView.insertItems(at: [indexPath])
                 }, completion: nil)
                 
                 self.scrollToBottom(animated: true)
             } else {
-                collectionView.reloadData()
+                self.collectionView.reloadData()
                 self.scrollToBottom(animated: false)
             }
         }
@@ -713,31 +715,25 @@ extension ChatController: MessageCellDelegate {
 
     func didTapRejectButton(_ cell: MessageCell) {
         guard let messageModel = cell.message else { return }
-        
-        messages.filter { message in
-            messageModel.signalMessage == message.signalMessage
-            }.forEach { message in
-                message.isActionable = false
-                message.signalMessage.paymentState = .rejected
-                message.signalMessage.save()
-        }
-        
-        let messagesCopy = self.messages
-        self.messages = messagesCopy
+
+        messageModel.signalMessage.paymentState = .rejected
+        messageModel.signalMessage.save()
+
+        self.collectionView.reloadItems(at: self.collectionView.indexPathsForVisibleItems)
     }
 
     func didTapApproveButton(_ cell: MessageCell) {
         guard let messageModel = cell.message else { return }
         
-        guard let message = messages.filter({ m in
-            messageModel.signalMessage == m.signalMessage
+        guard let message = messages.filter({ message in
+            messageModel.signalMessage == message.signalMessage
         }).first else { return }
         
-        message.signalMessage.paymentState = .pendingConfirmation
+        message.signalMessage.paymentState = .approved
         message.signalMessage.save()
 
         guard let paymentRequest = message.sofaWrapper as? SofaPaymentRequest else {
-            let alert = UIAlertController.dismissableAlert(title: "Somwthing went wrong")
+            let alert = UIAlertController.dismissableAlert(title: "Something went wrong")
             Navigator.presentModally(alert)
 
             return
@@ -754,12 +750,12 @@ extension ChatController: MessageCellDelegate {
             "value": value.toHexString,
         ]
 
-        self.showActivityIndicator()
+        // self.showActivityIndicator()
 
         self.etherAPIClient.createUnsignedTransaction(parameters: parameters) { transaction, error in
 
             guard let transaction = transaction as String? else {
-                self.hideActivityIndicator()
+                // self.hideActivityIndicator()
                 return
             }
 
@@ -770,19 +766,21 @@ extension ChatController: MessageCellDelegate {
                 self.hideActivityIndicator()
 
                 if error != nil {
-                    var message = "Something went wrong"
+
+                    message.signalMessage.paymentState = .failed
+                    message.signalMessage.save()
+
+                    var errorMessage = "Something went wrong"
 
                     if let json = json?.dictionary as [String: Any]?, let jsonMessage = json["message"] as? String {
-                        message = jsonMessage
+                        errorMessage = jsonMessage
                     }
 
-                    let alert = UIAlertController.dismissableAlert(title: "Error completing transaction", message: message)
+                    let alert = UIAlertController.dismissableAlert(title: "Error completing transaction", message: errorMessage)
                     Navigator.presentModally(alert)
                 } else if let json = json?.dictionary {
                     // update payment request message
-                    message.isActionable = false
-                    
-                    message.signalMessage.paymentState = .paid
+                    message.signalMessage.paymentState = .approved
                     message.signalMessage.save()
 
                     // send payment message
