@@ -24,18 +24,20 @@ class MessageCell: UICollectionViewCell {
 
     var statusFont: UIFont = Theme.regular(size: 13)
 
-    let totalHorizontalMargin: CGFloat = 123
+    let totalHorizontalMargin: CGFloat = 120
 
     var textFont: UIFont {
-        guard let message = self.message, let text = message.text, text.hasEmojiOnly, text.characters.count < 4 else {
-            if self.message?.type == .paymentRequest || self.message?.type == .payment {
-                return Theme.regular(size: 14)
-            }
+        guard let message = self.message else { return Theme.regular(size: 17) }
 
-            return Theme.regular(size: 17)
+        if message.type == .paymentRequest || message.type == .payment {
+            return Theme.regular(size: 14)
         }
 
-        return Theme.regular(size: 50)
+        if message.text.hasEmojiOnly && message.text.characters.count < 4 {
+            return Theme.regular(size: 50)
+        }
+
+        return Theme.regular(size: 17)
     }
 
     lazy var titleLabel: UILabel = {
@@ -94,6 +96,7 @@ class MessageCell: UICollectionViewCell {
     private let container: UIView = {
         let view = UIView()
         view.setHugging(.high, for: .vertical)
+        view.setCompressionResistance(.high, for: .horizontal)
         
         return view
     }()
@@ -154,22 +157,21 @@ class MessageCell: UICollectionViewCell {
 
     private let horizontalMargin: CGFloat = 15
 
-    var message: MessageModel? {
+    var message: Message? {
         didSet {
             guard let message = self.message else { return }
+
+            let shouldShowButtons = (message.signalMessage.paymentState == .none)
             
-            if let models = message.buttonModels, message.isActionable {
-                
-                for (i, model) in models.enumerated() {
-                    if self.buttons.count > i {
-                        self.buttons[i].model = model
+            if message.isActionable && shouldShowButtons  {
+                for (index, model) in message.buttons.enumerated() {
+                    if self.buttons.count > index {
+                        self.buttons[index].buttonModel = model
                     }
                 }
-                
             } else {
-                
                 for button in self.buttons {
-                    button.model = nil
+                    button.buttonModel = nil
                 }
             }
 
@@ -206,7 +208,7 @@ class MessageCell: UICollectionViewCell {
                 self.rightWidthBig.isActive = true
             }
 
-            if let text = message.text, !text.isEmpty {
+            if message.text.isEmpty {
                 self.textViewHeightConstraint.isActive = false
             } else {
                 self.textViewHeightConstraint.isActive = true
@@ -216,11 +218,7 @@ class MessageCell: UICollectionViewCell {
                 self.verticalGuidesConstraints[0].constant = 10
                 self.verticalGuidesConstraints[1].constant = 5
 
-                if let text = message.text {
-                    self.verticalGuidesConstraints[2].constant = text.isEmpty ? 0 : 10
-                } else {
-                    self.verticalGuidesConstraints[2].constant = 0
-                }
+                self.verticalGuidesConstraints[2].constant = message.text.isEmpty ? 0 : 10
 
                 self.verticalGuidesConstraints[3].constant = 10
 
@@ -244,10 +242,11 @@ class MessageCell: UICollectionViewCell {
                 self.container.layer.cornerRadius = 6
             }
 
-            if let text = message.text, text.hasEmojiOnly, text.characters.count < 4 {
+            if message.text.hasEmojiOnly, message.text.characters.count < 4 {
                 if message.image == nil {
                     self.container.backgroundColor = nil
                 }
+
                 self.textLeftConstraints.constant = 0
                 self.textRightConstraints.constant = 0
                 self.verticalGuidesConstraints[2].constant = 0
@@ -272,10 +271,10 @@ class MessageCell: UICollectionViewCell {
             }
 
             if message.image != nil {
-                let maxWidth = UIScreen.main.bounds.width - totalHorizontalMargin
+                let maxWidth = UIScreen.main.bounds.width - self.totalHorizontalMargin
                 let maxHeight: CGFloat = 200
 
-                let imageWidth = imageSize(for: CGSize(width: maxWidth, height: maxHeight)).width
+                let imageWidth = self.imageSize(for: CGSize(width: maxWidth, height: maxHeight)).width
                 self.imageView.widthConstraint?.isActive = true
                 self.imageView.widthConstraint?.constant = imageWidth
 
@@ -400,7 +399,7 @@ class MessageCell: UICollectionViewCell {
     }
 
     func buttonPressed(_ button: MessageCellButton) {
-        guard let model = button.model else { return }
+        guard let model = button.buttonModel else { return }
 
         switch model.type {
         case .approve:
@@ -451,7 +450,7 @@ class MessageCell: UICollectionViewCell {
     }
 
     private func applyCornersRadius() {
-        guard let message = message else { return }
+        guard let message = self.message else { return }
         let corners: UIRectCorner = message.isOutgoing ? [.bottomLeft, .topLeft, .topRight] : [.bottomRight, .topLeft, .topRight]
 
         self.container.roundCorners(corners, radius: 16)
@@ -487,17 +486,17 @@ class MessageCell: UICollectionViewCell {
             totalMargin += 5
         }
 
-        if let text = message.text, !text.isEmpty {
-            totalHeight += text.height(withConstrainedWidth: maxWidth, font: self.textFont)
+        if !message.text.isEmpty {
+            totalHeight += message.text.height(withConstrainedWidth: maxWidth, font: self.textFont)
             totalMargin += 10
         }
 
-        if let models = message.buttonModels {
+        if message.buttons.count == 2 {
             let shouldShowButtons = (message.signalMessage.paymentState == .none)
 
             if message.isActionable && shouldShowButtons {
-                totalHeight += models[0].title.height(withConstrainedWidth: maxWidth, font: Theme.medium(size: 15)) + 30
-                totalHeight += models[1].title.height(withConstrainedWidth: maxWidth, font: Theme.medium(size: 15)) + 30
+                totalHeight += message.buttons.first!.title.height(withConstrainedWidth: maxWidth, font: Theme.medium(size: 15)) + 30
+                totalHeight += message.buttons.last!.title.height(withConstrainedWidth: maxWidth, font: Theme.medium(size: 15)) + 30
             } else {
                 totalHeight += 40
             }
@@ -505,17 +504,11 @@ class MessageCell: UICollectionViewCell {
 
         var extraMargin: CGFloat = message.imageOnly ? 0 : 10
 
-        if let text = message.text, text.hasEmojiOnly, text.characters.count < 4 {
+        if message.text.hasEmojiOnly, message.text.characters.count < 4 {
             totalMargin = 0
             extraMargin = -4
         }
 
-        var height = totalHeight + totalMargin + extraMargin
-
-        if let status = message.status, message.type == .status, case .neutral(let s) = status {
-            height = s.height(withConstrainedWidth: width, font: self.statusFont) + 20
-        }
-
-        return CGSize(width: ceil(width), height: ceil(height))
+        return CGSize(width: ceil(width), height: ceil(totalHeight + totalMargin + extraMargin))
     }
 }

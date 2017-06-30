@@ -4,24 +4,12 @@ import TinyConstraints
 // Protocol to be implemented by the MessagesViewController subclass
 // to provide it with message models.
 protocol MessagesDataSource {
-    func models() -> [MessageModel]
-}
-
-struct IndexPathSizes {
-    var sizes: [IndexPath: CGSize] = [:]
-
-    subscript(indexPath: IndexPath) -> CGSize? {
-        get {
-            return self.sizes[indexPath]
-        } set {
-            self.sizes[indexPath] = newValue
-        }
-    }
+    var messages: [Message] { get set }
 }
 
 class MessagesViewController: OverlayController {
 
-    var calculatedSizeCache = IndexPathSizes()
+    var calculatedSizeCache = [IndexPath: CGSize]()
 
     var messagesDataSource: MessagesDataSource?
 
@@ -78,7 +66,7 @@ class MessagesViewController: OverlayController {
     }
 
     func calculateSize(for indexPath: IndexPath) -> CGSize {
-        guard let messages = self.messagesDataSource?.models() else { return .zero }
+        guard let messages = self.messagesDataSource?.messages else { return .zero }
 
         self.protoTypeCell.message = messages[indexPath.item]
         return self.protoTypeCell.size(for: self.collectionView.bounds.width)
@@ -102,16 +90,16 @@ class MessagesViewController: OverlayController {
 
 extension MessagesViewController: UICollectionViewDataSource {
 
-    func collectionView(_: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-        guard let messages = self.messagesDataSource?.models() else { return }
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        guard let messages = self.messagesDataSource?.messages else { return }
         guard let cell = cell as? MessageCell else { return }
         cell.indexPath = indexPath
 
         let message = messages[indexPath.item]
         cell.message = message
 
-        cell.setNeedsLayout()
-        cell.layoutIfNeeded()
+        collectionView.setNeedsLayout()
+        collectionView.layoutIfNeeded()
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -119,7 +107,7 @@ extension MessagesViewController: UICollectionViewDataSource {
     }
 
     func collectionView(_: UICollectionView, numberOfItemsInSection _: Int) -> Int {
-        guard let messages = self.messagesDataSource?.models() else { return 0 }
+        guard let messages = self.messagesDataSource?.messages else { return 0 }
         return messages.count
     }
 }

@@ -15,10 +15,23 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import Foundation
-import NoChat
 
 // TODO: make message conform to hashable instead of inheriting from NSObject
 open class Message: NSObject {
+
+    public struct MessageButtonModel {
+        enum ButtonType {
+            case approve
+            case decline
+        }
+
+        static let approve: MessageButtonModel = MessageButtonModel(type: .approve, title: "Approve", icon: "approve")
+        static let decline: MessageButtonModel = MessageButtonModel(type: .decline, title: "Decline", icon: "decline")
+
+        let type: ButtonType
+        let title: String
+        let icon: String
+    }
 
     public var fiatValueString: String?
     public var ethereumValueString: String?
@@ -30,6 +43,12 @@ open class Message: NSObject {
 
     public var attributedTitle: NSAttributedString?
     public var attributedSubtitle: NSAttributedString?
+
+    public let buttons: [MessageButtonModel]
+
+    public var type: SofaType {
+        return self.sofaWrapper?.type ?? .none
+    }
 
     public var attachment: TSAttachment? {
         if self.signalMessage.hasAttachments(), let attachmentId = (self.signalMessage.attachmentIds as? [String])?.first, let attachment = TSAttachment.fetch(uniqueId: attachmentId) {
@@ -108,6 +127,10 @@ open class Message: NSObject {
         return [.message, .paymentRequest, .payment, .command].contains(sofaWrapper.type)
     }
 
+    var imageOnly: Bool {
+        return self.text.isEmpty && self.image != nil
+    }
+
     var text: String {
         guard let sofaWrapper = self.sofaWrapper else { return "" }
         switch sofaWrapper.type {
@@ -128,15 +151,13 @@ open class Message: NSObject {
         return self.messageId
     }
 
-    public func type() -> String {
-        return self.messageType
-    }
-
     init(sofaWrapper: SofaWrapper?, signalMessage: TSMessage, date: Date? = nil, isOutgoing: Bool = true, shouldProcess: Bool = false) {
         self.sofaWrapper = sofaWrapper
         self.isOutgoing = isOutgoing
         self.signalMessage = signalMessage
         self.date = date ?? Date()
         self.isActionable = shouldProcess && !isOutgoing && (sofaWrapper?.type == .paymentRequest)
+
+        self.buttons = (!isOutgoing && (sofaWrapper?.type == .paymentRequest)) ? [MessageButtonModel.approve, MessageButtonModel.decline] : []
     }
 }

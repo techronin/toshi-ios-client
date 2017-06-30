@@ -20,9 +20,9 @@ class ImageCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
 
-        contentView.backgroundColor = .clear
+        self.contentView.backgroundColor = .clear
 
-        contentView.addSubview(self.imageView)
-        self.imageView.edges(to: contentView)
+        self.contentView.addSubview(self.imageView)
+        self.imageView.edges(to: self.contentView)
     }
 }

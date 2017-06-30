@@ -7,7 +7,7 @@ protocol ImagesViewControllerDismissDelegate {
 
 class ImagesViewController: UIViewController {
 
-    var messages: [MessageModel] = []
+    var messages: [Message] = []
     var initialIndexPath: IndexPath!
     var dismissDelegate: ImagesViewControllerDismissDelegate?
     var isInitialScroll: Bool = true
@@ -66,7 +66,7 @@ class ImagesViewController: UIViewController {
         return indexPath ?? self.initialIndexPath
     }
 
-    convenience init(messages: [MessageModel], initialIndexPath: IndexPath) {
+    convenience init(messages: [Message], initialIndexPath: IndexPath) {
         self.init()
         self.messages = messages
         self.initialIndexPath = initialIndexPath
@@ -109,7 +109,7 @@ class ImagesViewController: UIViewController {
         self.view.layoutIfNeeded()
         self.collectionView.reloadData()
 
-        guard let initialIndexPath = initialIndexPath else { return }
+        guard let initialIndexPath = self.initialIndexPath else { return }
         self.collectionView.scrollToItem(at: initialIndexPath, at: .centeredHorizontally, animated: false)
         self.isInitialScroll = false
     }

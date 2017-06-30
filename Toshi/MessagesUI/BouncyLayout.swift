@@ -56,8 +56,8 @@ public class BouncyLayout: UICollectionViewFlowLayout {
 
         guard let view = self.collectionView, let attributes = super.layoutAttributesForElements(in: view.bounds)?.flatMap({ $0.copy() as? UICollectionViewLayoutAttributes }) else { return }
 
-        self.oldBehaviors(for: attributes).forEach { animator.removeBehavior($0) }
-        self.newBehaviors(for: attributes).forEach { animator.addBehavior($0, damping, frequency) }
+        self.oldBehaviors(for: attributes).forEach { self.animator.removeBehavior($0) }
+        self.newBehaviors(for: attributes).forEach { self.animator.addBehavior($0, damping, frequency) }
     }
 
     private func oldBehaviors(for attributes: [UICollectionViewLayoutAttributes]) -> [UIAttachmentBehavior] {

@@ -20,7 +20,7 @@ import MobileCoreServices
 import ImagePicker
 import AVFoundation
 
-class ChatController: MessagesCollectionViewController {
+class ChatController: MessagesCollectionViewController, MessagesDataSource {
 
     fileprivate var etherAPIClient: EthereumAPIClient {
         return EthereumAPIClient.shared
@@ -65,11 +65,9 @@ class ChatController: MessagesCollectionViewController {
         return avatar
     }()
 
-    fileprivate var messageModels: [MessageModel] = []
-
-    fileprivate var messages = [Message]() {
+    internal var messages = [Message]() {
         didSet {
-            self.calculatedSizeCache.sizes.removeAll()
+            self.calculatedSizeCache.removeAll()
             
             for message in self.messages {
                 if let paymentRequest = message.sofaWrapper as? SofaPaymentRequest {
@@ -101,10 +99,6 @@ class ChatController: MessagesCollectionViewController {
                 return message.isDisplayable
             }
 
-            self.messageModels = self.visibleMessages.flatMap { message in
-                MessageModel(message: message)
-            }
-            
             // Only animate if we're adding one message, for bulk-insert we want them instant.
             // let isAnimated = displayables.count == 1
             
@@ -706,7 +700,7 @@ extension ChatController: MessageCellDelegate {
     func didTapImage(in cell: MessageCell) {
         guard let indexPath = cell.indexPath else { return }
 
-        let controller = ImagesViewController(messages: messageModels, initialIndexPath: indexPath)
+        let controller = ImagesViewController(messages: self.messages, initialIndexPath: indexPath)
         controller.dismissDelegate = self
         controller.title = self.title
         controller.transitioningDelegate = self
@@ -714,10 +708,15 @@ extension ChatController: MessageCellDelegate {
     }
 
     func didTapRejectButton(_ cell: MessageCell) {
-        guard let messageModel = cell.message else { return }
+        guard let message = cell.message else { return }
 
-        messageModel.signalMessage.paymentState = .rejected
-        messageModel.signalMessage.save()
+        if let index = self.messages.index(of: message) {
+            let indexPath = IndexPath(item: index, section: 0)
+            self.calculatedSizeCache.removeValue(forKey: indexPath)
+        }
+
+        message.signalMessage.paymentState = .rejected
+        message.signalMessage.save()
 
         self.collectionView.reloadItems(at: self.collectionView.indexPathsForVisibleItems)
     }
@@ -1155,13 +1154,6 @@ extension ChatController: PaymentRequestControllerDelegate {
         let paymentRequest = SofaPaymentRequest(content: request)
 
         self.sendMessage(sofaWrapper: paymentRequest)
-    }
-}
-
-extension ChatController: MessagesDataSource {
-
-    func models() -> [MessageModel] {
-        return self.messageModels
     }
 }
 
