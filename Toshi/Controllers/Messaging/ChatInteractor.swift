@@ -77,6 +77,18 @@ final class ChatsInteractor {
             print("Failure: \(error)")
         })
     }
+
+    func send(attachmentData: Data, type: String, filename: String) {
+        let wrapper = SofaMessage(body: "")
+        let timestamp = NSDate.ows_millisecondsSince1970(for: Date())
+        let outgoingMessage = TSOutgoingMessage(timestamp: timestamp, in: self.thread, messageBody: wrapper.content)
+
+        self.messageSender?.sendAttachmentData(attachmentData, contentType: type, sourceFilename: filename, in: outgoingMessage, success: {
+            print("Success")
+        }, failure: { error in
+            print("Failure: \(error)")
+        })
+    }
     
     func sendVideo(with url: URL) {
         guard let videoData = try? Data(contentsOf: url) else { return }
@@ -377,16 +389,16 @@ final class ChatsInteractor {
                         contentType = "video/mov"
                     }
                     
-                    let wrapper = SofaMessage(body: "")
-                    let timestamp = NSDate.ows_millisecondsSince1970(for: Date())
-                    
                     if let thumbnailData = mediaData?["thumbnailData"] as? Data {
-                        let outgoingMessage = TSOutgoingMessage(timestamp: timestamp, in: self.thread, messageBody: wrapper.content)
-                        self.messageSender?.sendAttachmentData(thumbnailData, contentType: contentType, sourceFilename: "File.jpeg", in: outgoingMessage, success: {
-                            print("Success")
-                        }, failure: { error in
-                            print("Failure: \(error)")
-                        })
+                        let fileExtension = contentType.components(separatedBy: "/").last ?? ""
+                        let name = (mediaData!["assetIdentifier"] as? String ?? "").replacingOccurrences(of: "/", with: "-")
+                        let filename = name.appending(".\(fileExtension)")
+
+                        // By delaying each message by a little bit, we avoid an issue
+                        // where only the first attachment would be sent.
+                        DispatchQueue.main.asyncAfter(seconds: 0.1) {
+                            self.send(attachmentData: thumbnailData, type: contentType, filename: filename)
+                        }
                     }
                 }
             }
