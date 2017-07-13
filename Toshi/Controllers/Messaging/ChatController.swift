@@ -885,7 +885,6 @@ extension ChatController: ImagePickerDelegate {
     }
     
     func wrapperDidPress(_: ImagePickerController, images _: [UIImage]) {
-        print("!")
     }
 }
 
