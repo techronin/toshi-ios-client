@@ -34,18 +34,6 @@ end
 # Warn when there is a big PR.
 warn("Big PR") if git.lines_of_code > 500
 
-# Check for warnings
-xcodebuild.json_file = "build/reports/errors.json"
-xcodebuild.post_messages = false
-number_of_warnings = xcodebuild.parse_warnings
-
-if number_of_warnings > 0
- warn("The project still contains #{number_of_warnings} warnings 😱")
-end
-
-xcode_summary.inline_mode = true
-xcode_summary.report 'build/reports/errors.json'
-
 # Mainly to encourage writing up some reasoning about the PR, rather than just leaving a title.
 if github.pr_body.length < 3 && git.lines_of_code > 10
   warn("Please provide a summary in the Pull Request description")
