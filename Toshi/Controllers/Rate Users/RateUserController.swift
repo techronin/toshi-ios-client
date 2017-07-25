@@ -99,6 +99,7 @@ class RateUserController: ModalPresentable {
         view.internalTextView.textContainerInset = UIEdgeInsets(top: 8, left: 5, bottom: 5, right: 5)
         view.internalTextView.scrollIndicatorInsets = UIEdgeInsets(top: 5, left: 0, bottom: 5, right: 5)
         view.placeholder = " Review (optional)"
+        view.returnKeyType = .done
 
         return view
     }()
@@ -277,7 +278,7 @@ class RateUserController: ModalPresentable {
             self.submitButton.topAnchor.constraint(equalTo: self.dividers[1].bottomAnchor),
             self.submitButton.leftAnchor.constraint(equalTo: self.contentView.leftAnchor),
             self.submitButton.rightAnchor.constraint(equalTo: self.contentView.rightAnchor),
-            self.submitButton.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor),
+            self.submitButton.bottomAnchor.constraint(equalTo: self.contentView.bottomAnchor)
         ])
 
         background.addGestureRecognizer(tapGesture)
@@ -303,5 +304,11 @@ extension RateUserController: HPGrowingTextViewDelegate {
     func growingTextViewDidChange(_ textView: HPGrowingTextView!) {
         inputHeight = textView.frame.height
         review = textView.text
+    }
+
+    func growingTextViewShouldReturn(_ growingTextView: HPGrowingTextView!) -> Bool {
+        growingTextView.resignFirstResponder()
+
+        return false
     }
 }
