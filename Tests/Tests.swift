@@ -4,11 +4,14 @@ import UIKit
 class Tests: XCTestCase {
 
     func testExample() {
-        AppsAPIClient.shared.getTopRatedApps { apps, error in
-            XCTAssertTrue(true)
+        let expect = self.expectation(description: "request login with email")
+        EthereumAPIClient.shared.getRate { decimal in
+            XCTAssertNotNil(decimal)
+            expect.fulfill()
 
-        }
+         }
 
+        self.waitForExpectations(timeout: 100)
 
     }
 }
