@@ -470,24 +470,6 @@ final class ChatController: OverlayController {
         return image
     }
 
-    fileprivate func messageAction(for indexPath: IndexPath, message: MessageModel) -> MessageAction {
-        return { type in
-
-            let paymentState: TSInteraction.PaymentState = (type == .approve) ? .pendingConfirmation : .rejected
-
-            self.adjustToPaymentState(paymentState, at: indexPath)
-
-            guard type == .approve, let paymentRequest = message.sofaWrapper as? SofaPaymentRequest else { return }
-
-            self.showActivityIndicator()
-
-            self.viewModel.interactor.sendPayment(in: paymentRequest.value) { (success: Bool) in
-                let state: TSInteraction.PaymentState = success ? .approved : .failed
-                self.adjustToPaymentState(state, at: indexPath)
-            }
-        }
-    }
-
     fileprivate func set(balance: NSDecimalNumber) {
         ethereumPromptView.balance = balance
     }
