@@ -71,12 +71,16 @@ class ImagesViewControllerTransition: NSObject, UIViewControllerAnimatedTransiti
         if !isPresenting {
             messagesViewController.tableView.scrollToRow(at: imagesViewController.currentIndexPath, at: .middle, animated: false)
         }
-
-        print(imagesViewController)
-
+        
         guard let toCell = imagesViewController.collectionView.visibleCells.flatMap({ cell in cell as? ImageCell }).first(where: { imageCell in imageCell.frame.width != 0 }) else { return nil }
 
         return toCell.imageView
+    }
+    
+    func cornerType(for messagesViewController: ChatController, _ imagesViewController: ImagesViewController) -> MessagesCornerType? {
+        guard let cell = messagesViewController.tableView.cellForRow(at: imagesViewController.currentIndexPath) as? MessagesBasicCell else { return nil }
+        
+        return cell.messagesCornerView.type
     }
 
     func animate(with context: UIViewControllerContextTransitioning, _ messagesViewController: ChatController, _ imagesViewController: ImagesViewController) {
@@ -118,11 +122,16 @@ class ImagesViewControllerTransition: NSObject, UIViewControllerAnimatedTransiti
         endFrame.origin.y -= isPresenting ? navigationBarHeight : navigationBarHeight + topBarHeight
 
         let clippingContainer = UIView()
-        clippingContainer.layer.cornerRadius = 16
         clippingContainer.clipsToBounds = true
         clippingContainer.frame = beginFrame
         mask.addSubview(clippingContainer)
-
+        
+        let cornerView = MessagesCornerView()
+        cornerView.type = cornerType(for: messagesViewController, imagesViewController)
+        cornerView.alpha = isPresenting ? 1 : 0
+        cornerView.frame = beginFrame
+        mask.addSubview(cornerView)
+        
         guard let scalingImageView = fullsize.duplicate() else { return }
         scalingImageView.contentMode = fullsize.contentMode
         scalingImageView.clipsToBounds = true
@@ -145,12 +154,15 @@ class ImagesViewControllerTransition: NSObject, UIViewControllerAnimatedTransiti
 
         UIView.animate(withDuration: duration, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: .easeInOutFromCurrentStateWithUserInteraction, animations: {
             clippingContainer.frame = endFrame
+            cornerView.alpha = self.isPresenting ? 0 : 1
+            cornerView.frame = endFrame
             mask.frame = self.isPresenting ? imageFrame : messagesFrame
             scalingImageView.center = CGPoint(x: endFrame.width / 2, y: endFrame.height / 2)
             scalingImageView.transform = self.isPresenting ? .identity : scale
         }) { _ in
             fadingBackground.removeFromSuperview()
             mask.removeFromSuperview()
+            cornerView.removeFromSuperview()
             clippingContainer.removeFromSuperview()
             thumbnail.isHidden = false
             fullsize.isHidden = false
