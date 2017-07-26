@@ -21,20 +21,14 @@ import ImagePicker
 import AVFoundation
 
 final class ChatController: OverlayController {
-
-    // static vars
+    
     fileprivate static let subcontrolsViewWidth: CGFloat = 228.0
     fileprivate static let buttonMargin: CGFloat = 10
-
-    // properties
     private(set) var thread: TSThread
-
     fileprivate var textLayoutQueue = DispatchQueue(label: "com.tokenbrowser.token.layout", qos: DispatchQoS(qosClass: .default, relativePriority: 0))
     fileprivate var menuSheetController: MenuSheetController?
-
     fileprivate var isVisible: Bool = false
-
-    // computed properties
+    
     override var canBecomeFirstResponder: Bool {
         return presentedViewController == nil
     }
@@ -42,8 +36,7 @@ final class ChatController: OverlayController {
     fileprivate var chatAPIClient: ChatAPIClient {
         return ChatAPIClient.shared
     }
-
-    // observed properties
+    
     fileprivate var buttons: [SofaMessage.Button] = [] {
         didSet {
             self.adjustToNewButtons()
@@ -76,8 +69,7 @@ final class ChatController: OverlayController {
             }
         }
     }
-
-    // lazy vars
+    
     fileprivate lazy var viewModel: ChatViewModel = {
         ChatViewModel(output: self, thread: self.thread)
     }()
@@ -91,9 +83,7 @@ final class ChatController: OverlayController {
 
         return disposable
     }()
-
-    // lazy views
-
+    
     fileprivate lazy var avatarImageView: AvatarImageView = {
         let avatar = AvatarImageView(image: UIImage())
         avatar.bounds.size = CGSize(width: 34, height: 34)
