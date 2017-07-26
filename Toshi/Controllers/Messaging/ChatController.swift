@@ -648,7 +648,7 @@ extension ChatController: UITableViewDataSource {
             }
 
             cell.isOutGoing = message.isOutgoing
-            cell.cornerType = cornerType(for: indexPath)
+            cell.positionType = positionType(for: indexPath)
         }
 
         if let cell = cell as? MessagesImageCell, message.type == .image {
@@ -675,7 +675,7 @@ extension ChatController: UITableViewDataSource {
         return cell
     }
 
-    private func cornerType(for indexPath: IndexPath) -> MessageCornerType {
+    private func positionType(for indexPath: IndexPath) -> MessagePositionType {
         guard let currentMessage = viewModel.messageModels.element(at: indexPath.row) else { return .top }
         guard let previousMessage = viewModel.messageModels.element(at: indexPath.row - 1) else { return .top }
         guard let nextMessage = viewModel.messageModels.element(at: indexPath.row + 1) else {
