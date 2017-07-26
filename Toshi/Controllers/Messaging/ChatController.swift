@@ -117,6 +117,7 @@ final class ChatController: OverlayController {
         view.backgroundColor = .clear
         view.delegate = self.controlsViewDelegateDatasource
         view.dataSource = self.controlsViewDelegateDatasource
+        view.contentInset = UIEdgeInsets(top: 10, left: 0, bottom: 0, right: 0)
         
         view.register(ControlCell.self)
 
@@ -200,6 +201,8 @@ final class ChatController: OverlayController {
         
         view.backgroundColor = Theme.viewBackgroundColor
         
+        addSubviewsAndConstraints()
+        
         textInputView.delegate = self
         
         controlsViewDelegateDatasource.controlsCollectionView = controlsView
@@ -207,7 +210,6 @@ final class ChatController: OverlayController {
         
         hideSubcontrolsMenu()
         setupActivityIndicator()
-        addSubviewsAndConstraints()
         setupActiveNetworkView(hidden: true)
         
         viewModel.fetchAndUpdateBalance { balance, error in
@@ -281,7 +283,7 @@ final class ChatController: OverlayController {
         controlsViewHeight = controlsView.height(0)
         
         subcontrolsView.left(to: view, offset: 16)
-        subcontrolsView.bottomToTop(of: controlsView, offset: ChatController.buttonMargin)
+        subcontrolsView.bottomToTop(of: controlsView)
         subcontrolsView.width(ChatController.subcontrolsViewWidth)
         subcontrolsViewHeight = subcontrolsView.height(0)
         
@@ -366,7 +368,7 @@ final class ChatController: OverlayController {
                     self.buttonsHeight = height > 0 ? height + (2 * ChatController.buttonMargin) : 0
 
                     guard height > 0 else { return }
-                    self.controlsViewHeight?.constant = height
+                    self.controlsViewHeight?.constant = height + (2 * ChatController.buttonMargin)
 
                     UIView.animate(withDuration: 0.3, delay: 0.0, options: [.curveEaseIn, .beginFromCurrentState], animations: {
                         self.controlsView.layoutIfNeeded()
@@ -928,6 +930,7 @@ extension ChatController: KeyboardAwareAccessoryViewDelegate {
 }
 
 extension ChatController: ControlViewActionDelegate {
+    
     func controlsCollectionViewDidSelectControl(_ button: SofaMessage.Button) {
         switch button.type {
         case .button:
