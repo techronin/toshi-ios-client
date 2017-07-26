@@ -1185,10 +1185,13 @@
 		A9F8D1C81E72B4AA003F5749 /* Checkbox.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9F8D1C71E72B4AA003F5749 /* Checkbox.swift */; };
 		ADA43FF3BB04BEDF54DF5CCC /* libPods-CocoaPods-Tests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 24AC0CEAA51D7F8A19F246E9 /* libPods-CocoaPods-Tests.a */; };
 		C31C048D3765021CC4E2509C /* libPods-CocoaPods-Development.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 8127F350AC2D5B8DBC172E34 /* libPods-CocoaPods-Development.a */; };
+		D197B11DD70DB5696FFC4FD2 /* UINotificationName+Additions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197B669EF87D9D6642E12BA /* UINotificationName+Additions.swift */; };
 		D197B401E977724E946A55BE /* ActiveNetworkDisplaying.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197BAEA583CAF9862D17B38 /* ActiveNetworkDisplaying.swift */; };
+		D197B61F77E710DF67E4FBD2 /* UINotificationName+Additions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197B669EF87D9D6642E12BA /* UINotificationName+Additions.swift */; };
 		D197B6A1519FAB078F9174F4 /* BlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197BB4FC8D408B73FE253E5 /* BlurView.swift */; };
 		D197B6D91E419A23890C7E8B /* BlurView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197BB4FC8D408B73FE253E5 /* BlurView.swift */; };
 		D197B83F0A9396CF2E7628D5 /* ActiveNetworkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197B6E47F5F979A8C154E9A /* ActiveNetworkView.swift */; };
+		D197B9D646686EF7FE2D78B8 /* UINotificationName+Additions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197B669EF87D9D6642E12BA /* UINotificationName+Additions.swift */; };
 		D197BC32BA4D952C0E815F18 /* ActiveNetworkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197B6E47F5F979A8C154E9A /* ActiveNetworkView.swift */; };
 		D197BEB965F76FE14EF90555 /* ActiveNetworkDisplaying.swift in Sources */ = {isa = PBXBuildFile; fileRef = D197BAEA583CAF9862D17B38 /* ActiveNetworkDisplaying.swift */; };
 		DBFAB6FED2A3595E0356668C /* libPods-CocoaPods-Distribution.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2446336EA68730ACD1CE100D /* libPods-CocoaPods-Distribution.a */; };
@@ -1201,9 +1204,22 @@
 		E60A52AA1F28DD410032CAC0 /* AvatarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BE6FB0E1EFC0C1600B0B848 /* AvatarManager.swift */; };
 		E60A52AB1F28E0F30032CAC0 /* Yap.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FCDBAD31E27DE8800A70E07 /* Yap.swift */; };
 		E60A52AC1F28E0FD0032CAC0 /* Cereal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F9238FA1E24F9BF004BEEE0 /* Cereal.swift */; };
+		E60A52AF1F28E6A60032CAC0 /* EthereumAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 145666051E30D31A00E52027 /* EthereumAPIClient.swift */; };
+		E60A52B01F28E6FF0032CAC0 /* NetworkSwitcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B002D8E1F17BA1800D92240 /* NetworkSwitcher.swift */; };
+		E60A52B11F28E7830032CAC0 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9202E561ED84F6A0036E9B7 /* Extensions.swift */; };
 		E6B8577A1F25F3D700979650 /* AddressChangeAlertController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6B857791F25F3D700979650 /* AddressChangeAlertController.swift */; };
 		E6B8577B1F25F3D700979650 /* AddressChangeAlertController.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6B857791F25F3D700979650 /* AddressChangeAlertController.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		E60A52AD1F28E3920032CAC0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9F9238A91E24F1D2004BEEE0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 9F9238B01E24F1D2004BEEE0;
+			remoteInfo = Development;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		1462543C1E4326DA00A3B822 /* Embed Frameworks */ = {
@@ -2235,6 +2251,7 @@
 		A9F61F7E1E72E22900D892E5 /* SettingsSectionHeader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsSectionHeader.swift; sourceTree = "<group>"; };
 		A9F8D1C71E72B4AA003F5749 /* Checkbox.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Checkbox.swift; sourceTree = "<group>"; };
 		CFAFE0DF986DC3B38AF50EE6 /* Pods-CocoaPods-Distribution.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CocoaPods-Distribution.release.xcconfig"; path = "Pods/Target Support Files/Pods-CocoaPods-Distribution/Pods-CocoaPods-Distribution.release.xcconfig"; sourceTree = "<group>"; };
+		D197B669EF87D9D6642E12BA /* UINotificationName+Additions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UINotificationName+Additions.swift"; sourceTree = "<group>"; };
 		D197B6E47F5F979A8C154E9A /* ActiveNetworkView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ActiveNetworkView.swift; sourceTree = "<group>"; };
 		D197BAEA583CAF9862D17B38 /* ActiveNetworkDisplaying.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ActiveNetworkDisplaying.swift; sourceTree = "<group>"; };
 		D197BB4FC8D408B73FE253E5 /* BlurView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BlurView.swift; sourceTree = "<group>"; };
@@ -3571,6 +3588,7 @@
 				9FAC46EC1E800C13005F76A9 /* UIColor+Additions.swift */,
 				2BE66A081EF9027B007A7130 /* UIScrollView+Keyboard.swift */,
 				A9AC740A1E77E62900365029 /* UIView+Additions.swift */,
+				D197B669EF87D9D6642E12BA /* UINotificationName+Additions.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -3849,6 +3867,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				E60A52AE1F28E3920032CAC0 /* PBXTargetDependency */,
 			);
 			name = Tests;
 			productName = Tests;
@@ -3914,6 +3933,7 @@
 					14147EA01E8119F0006BD47B = {
 						CreatedOnToolsVersion = 8.2.1;
 						ProvisioningStyle = Automatic;
+						TestTargetID = 9F9238B01E24F1D2004BEEE0;
 					};
 					149F9A5D1E72E29A00FB74AA = {
 						DevelopmentTeam = 29X3GG489T;
@@ -4298,13 +4318,17 @@
 				E60A52AC1F28E0FD0032CAC0 /* Cereal.swift in Sources */,
 				E60A52A91F28DC8D0032CAC0 /* idAPIClient.swift in Sources */,
 				9FE5338B1F0B9CF100B0C2B5 /* Theme.swift in Sources */,
+				E60A52AF1F28E6A60032CAC0 /* EthereumAPIClient.swift in Sources */,
 				E60A52A51F28DB710032CAC0 /* AppsAPIClient.swift in Sources */,
 				9FE5338A1F0B9CDA00B0C2B5 /* BaseConverter.swift in Sources */,
+				E60A52B01F28E6FF0032CAC0 /* NetworkSwitcher.swift in Sources */,
 				9FE533891F0B9CBC00B0C2B5 /* NSDecimalNumber+Additions.swift in Sources */,
+				E60A52B11F28E7830032CAC0 /* Extensions.swift in Sources */,
 				14147EA41E8119F0006BD47B /* Tests.swift in Sources */,
 				9FE533881F0B9C5500B0C2B5 /* EthereumConverter.swift in Sources */,
 				E60A52AB1F28E0F30032CAC0 /* Yap.swift in Sources */,
 				E60A52A81F28DC750032CAC0 /* TokenUser.swift in Sources */,
+				D197B9D646686EF7FE2D78B8 /* UINotificationName+Additions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4809,6 +4833,7 @@
 				D197B6A1519FAB078F9174F4 /* BlurView.swift in Sources */,
 				D197B83F0A9396CF2E7628D5 /* ActiveNetworkView.swift in Sources */,
 				D197BEB965F76FE14EF90555 /* ActiveNetworkDisplaying.swift in Sources */,
+				D197B11DD70DB5696FFC4FD2 /* UINotificationName+Additions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5315,10 +5340,19 @@
 				D197B6D91E419A23890C7E8B /* BlurView.swift in Sources */,
 				D197BC32BA4D952C0E815F18 /* ActiveNetworkView.swift in Sources */,
 				D197B401E977724E946A55BE /* ActiveNetworkDisplaying.swift in Sources */,
+				D197B61F77E710DF67E4FBD2 /* UINotificationName+Additions.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		E60A52AE1F28E3920032CAC0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 9F9238B01E24F1D2004BEEE0 /* Development */;
+			targetProxy = E60A52AD1F28E3920032CAC0 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		9F9238C21E24F1D2004BEEE0 /* LaunchScreen.storyboard */ = {
@@ -5337,7 +5371,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3F0DBA781E2F9F3F471A6BAD /* Pods-CocoaPods-Tests.debug.xcconfig */;
 			buildSettings = {
-				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Toshi.app/Tests";
+				BUNDLE_LOADER = "$(TEST_HOST)";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
@@ -5351,6 +5385,7 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "Toshi/Resources/Toshi-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Toshi.app/Toshi";
 			};
 			name = Debug;
 		};
@@ -5358,7 +5393,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = F878FE03459983FE633C60EF /* Pods-CocoaPods-Tests.release.xcconfig */;
 			buildSettings = {
-				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Toshi.app/Tests";
+				BUNDLE_LOADER = "$(TEST_HOST)";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Carthage/Build/iOS",
@@ -5370,6 +5405,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "Toshi/Resources/Toshi-Bridging-Header.h";
 				SWIFT_VERSION = 3.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Toshi.app/Toshi";
 			};
 			name = Release;
 		};
