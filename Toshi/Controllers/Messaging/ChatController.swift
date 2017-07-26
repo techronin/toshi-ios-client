@@ -21,32 +21,31 @@ import ImagePicker
 import AVFoundation
 
 final class ChatController: OverlayController {
-    
+
     fileprivate static let subcontrolsViewWidth: CGFloat = 228.0
     fileprivate static let buttonMargin: CGFloat = 10
+    
     private(set) var thread: TSThread
+    
     fileprivate var textLayoutQueue = DispatchQueue(label: "com.tokenbrowser.token.layout", qos: DispatchQoS(qosClass: .default, relativePriority: 0))
     fileprivate var menuSheetController: MenuSheetController?
     fileprivate var isVisible: Bool = false
     
-    override var canBecomeFirstResponder: Bool {
-        return presentedViewController == nil
-    }
-
-    fileprivate var chatAPIClient: ChatAPIClient {
-        return ChatAPIClient.shared
-    }
+    fileprivate lazy var viewModel: ChatViewModel = ChatViewModel(output: self, thread: self.thread)
+    fileprivate lazy var imagesCache: NSCache<NSString, UIImage> = NSCache()
+    fileprivate lazy var disposable: SMetaDisposable = SMetaDisposable()
     
     fileprivate var buttons: [SofaMessage.Button] = [] {
         didSet {
-            self.adjustToNewButtons()
+            adjustToNewButtons()
         }
     }
 
     fileprivate var textInputHeight: CGFloat = ChatInputTextPanel.defaultHeight {
         didSet {
             if self.isVisible {
-                self.updateConstraints()
+                updateContentInset()
+                updateConstraints()
             }
         }
     }
@@ -54,7 +53,8 @@ final class ChatController: OverlayController {
     fileprivate var buttonsHeight: CGFloat = 0 {
         didSet {
             if self.isVisible {
-                self.updateConstraints()
+                updateContentInset()
+                updateConstraints()
             }
         }
     }
@@ -62,28 +62,12 @@ final class ChatController: OverlayController {
     fileprivate var heightOfKeyboard: CGFloat = 0 {
         didSet {
             if self.isVisible, heightOfKeyboard != oldValue {
-                UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: .easeOutFromCurrentStateWithUserInteraction, animations: {
-                }, completion: nil)
-
-                self.updateConstraints()
+                updateContentInset()
+                updateConstraints()
             }
         }
     }
-    
-    fileprivate lazy var viewModel: ChatViewModel = {
-        ChatViewModel(output: self, thread: self.thread)
-    }()
 
-    fileprivate lazy var imagesCache: NSCache<NSString, UIImage> = {
-        NSCache<NSString, UIImage>()
-    }()
-
-    fileprivate lazy var disposable: SMetaDisposable = {
-        let disposable = SMetaDisposable()
-
-        return disposable
-    }()
-    
     fileprivate lazy var avatarImageView: AvatarImageView = {
         let avatar = AvatarImageView(image: UIImage())
         avatar.bounds.size = CGSize(width: 34, height: 34)
@@ -111,16 +95,11 @@ final class ChatController: OverlayController {
         view.translatesAutoresizingMaskIntoConstraints = false
         view.backgroundColor = Theme.viewBackgroundColor
         view.estimatedRowHeight = 64.0
-        view.allowsSelection = true
         view.dataSource = self
         view.delegate = self
-        view.tableFooterView = UIView()
         view.separatorStyle = .none
         view.keyboardDismissMode = .interactive
-        view.contentInset = UIEdgeInsets(top: 0, left: 0, bottom: 10, right: 0)
-
-        view.contentInset = UIEdgeInsets(top: ChatsFloatingHeaderView.height + 64.0, left: 0, bottom: 0, right: 0)
-
+        
         view.register(MessagesImageCell.self)
         view.register(MessagesPaymentCell.self)
         view.register(MessagesTextCell.self)
@@ -128,26 +107,18 @@ final class ChatController: OverlayController {
         return view
     }()
 
-    fileprivate lazy var textInputView: ChatInputTextPanel = {
-        let view = ChatInputTextPanel(withAutoLayout: true)
-
-        return view
-    }()
-
-    fileprivate lazy var activityView: UIActivityIndicatorView = {
-        self.defaultActivityIndicator()
-    }()
-
+    fileprivate lazy var textInputView: ChatInputTextPanel = ChatInputTextPanel(withAutoLayout: true)
+    fileprivate lazy var activityView: UIActivityIndicatorView = self.defaultActivityIndicator()
+    
     fileprivate lazy var controlsView: ControlsCollectionView = {
         let view = ControlsCollectionView()
-
         view.clipsToBounds = true
         view.translatesAutoresizingMaskIntoConstraints = false
         view.backgroundColor = .clear
-
-        view.register(ControlCell.self)
         view.delegate = self.controlsViewDelegateDatasource
         view.dataSource = self.controlsViewDelegateDatasource
+        
+        view.register(ControlCell.self)
 
         return view
     }()
@@ -169,22 +140,11 @@ final class ChatController: OverlayController {
         return view
     }()
 
-    fileprivate lazy var textInputViewBottom: NSLayoutConstraint = {
-        self.textInputView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor)
-    }()
-
-    fileprivate lazy var textInputViewHeight: NSLayoutConstraint = {
-        self.textInputView.heightAnchor.constraint(equalToConstant: ChatInputTextPanel.defaultHeight)
-    }()
-
-    fileprivate lazy var controlsViewHeightConstraint: NSLayoutConstraint = {
-        self.controlsView.heightAnchor.constraint(equalToConstant: 0)
-    }()
-
-    fileprivate lazy var subcontrolsViewHeightConstraint: NSLayoutConstraint = {
-        self.subcontrolsView.heightAnchor.constraint(equalToConstant: 0)
-    }()
-
+    private var textInputViewBottom: NSLayoutConstraint?
+    private var textInputViewHeight: NSLayoutConstraint?
+    fileprivate var controlsViewHeight: NSLayoutConstraint?
+    fileprivate var subcontrolsViewHeight: NSLayoutConstraint?
+    
     fileprivate lazy var controlsViewDelegateDatasource: ControlsViewDelegateDataSource = {
         let controlsViewDelegateDatasource = ControlsViewDelegateDataSource()
         controlsViewDelegateDatasource.actionDelegate = self
@@ -215,6 +175,15 @@ final class ChatController: OverlayController {
     required init?(coder _: NSCoder) {
         fatalError()
     }
+    
+    func updateContentInset() {
+        let activeNetworkViewHeight = activeNetworkView.heightConstraint?.constant ?? 0
+        let topInset = ChatsFloatingHeaderView.height + 64.0 + activeNetworkViewHeight
+        let bottomInset = textInputHeight
+        
+        tableView.contentInset = UIEdgeInsets(top: topInset + 2, left: 0, bottom: bottomInset + buttonsHeight + 10, right: 0)
+        tableView.scrollIndicatorInsets = UIEdgeInsets(top: topInset, left: 0, bottom: bottomInset, right: 0)
+    }
 
     fileprivate func registerNotifications() {
         let notificationCenter = NotificationCenter.default
@@ -228,9 +197,19 @@ final class ChatController: OverlayController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
+        view.backgroundColor = Theme.viewBackgroundColor
+        
+        textInputView.delegate = self
+        
+        controlsViewDelegateDatasource.controlsCollectionView = controlsView
+        subcontrolsViewDelegateDatasource.subcontrolsCollectionView = subcontrolsView
+        
+        hideSubcontrolsMenu()
+        setupActivityIndicator()
         addSubviewsAndConstraints()
-
+        setupActiveNetworkView(hidden: true)
+        
         viewModel.fetchAndUpdateBalance { balance, error in
             if let error = error {
                 let alertController = UIAlertController.errorAlert(error as NSError)
@@ -255,6 +234,8 @@ final class ChatController: OverlayController {
         if let url = viewModel.contactAvatarUrl {
             avatarImageView.setImage(from: url)
         }
+        
+        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: avatarImageView)
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -278,58 +259,36 @@ final class ChatController: OverlayController {
     }
 
     fileprivate func addSubviewsAndConstraints() {
-        view.addSubview(textInputView)
-
-        NSLayoutConstraint.activate([
-            self.textInputView.leftAnchor.constraint(equalTo: self.view.leftAnchor),
-            self.textInputView.rightAnchor.constraint(equalTo: self.view.rightAnchor),
-
-            self.textInputViewBottom,
-            self.textInputViewHeight
-        ])
-
-        view.addSubview(controlsView)
-
-        controlsViewHeightConstraint.isActive = true
-        controlsView.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 16).isActive = true
-        controlsView.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -16).isActive = true
-        controlsView.bottomAnchor.constraint(equalTo: textInputView.topAnchor).isActive = true
-        controlsViewDelegateDatasource.controlsCollectionView = controlsView
-
-        hideSubcontrolsMenu()
-
-        view.backgroundColor = Theme.viewBackgroundColor
-
-        setupActivityIndicator()
-
-        textInputView.delegate = self
-
         view.addSubview(tableView)
-
-        tableView.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
-
-        tableView.left(to: view)
-        tableView.right(to: view)
-        tableView.bottomToTop(of: controlsView)
-
-        view.addSubview(ethereumPromptView)
-
-        ethereumPromptView.heightAnchor.constraint(equalToConstant: ChatsFloatingHeaderView.height).isActive = true
-        ethereumPromptView.topAnchor.constraint(equalTo: topLayoutGuide.bottomAnchor).isActive = true
-        ethereumPromptView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
-        ethereumPromptView.rightAnchor.constraint(equalTo: view.rightAnchor).isActive = true
-
-        setupActiveNetworkView(hidden: true)
-
+        view.addSubview(textInputView)
+        view.addSubview(controlsView)
         view.addSubview(subcontrolsView)
-
-        subcontrolsViewHeightConstraint.isActive = true
+        view.addSubview(ethereumPromptView)
+        
+        tableView.top(to: view)
+        tableView.left(to: view)
+        tableView.bottom(to: textInputView)
+        tableView.right(to: view)
+        
+        textInputView.left(to: view)
+        textInputViewBottom = textInputView.bottom(to: view)
+        textInputView.right(to: view)
+        textInputViewHeight = textInputView.height(ChatInputTextPanel.defaultHeight)
+        
+        controlsView.left(to: view, offset: 16)
+        controlsView.bottomToTop(of: textInputView)
+        controlsView.right(to: view, offset: -16)
+        controlsViewHeight = controlsView.height(0)
+        
+        subcontrolsView.left(to: view, offset: 16)
+        subcontrolsView.bottomToTop(of: controlsView, offset: ChatController.buttonMargin)
         subcontrolsView.width(ChatController.subcontrolsViewWidth)
-        subcontrolsView.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 16).isActive = true
-        subcontrolsView.bottomAnchor.constraint(equalTo: controlsView.topAnchor, constant: ChatController.buttonMargin).isActive = true
-        subcontrolsViewDelegateDatasource.subcontrolsCollectionView = subcontrolsView
-
-        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: avatarImageView)
+        subcontrolsViewHeight = subcontrolsView.height(0)
+        
+        ethereumPromptView.top(to: view, offset: 64)
+        ethereumPromptView.left(to: view)
+        ethereumPromptView.right(to: view)
+        ethereumPromptView.height(ChatsFloatingHeaderView.height)
     }
 
     func sendPayment(with parameters: [String: Any]) {
@@ -348,11 +307,10 @@ final class ChatController: OverlayController {
     }
 
     fileprivate func updateConstraints() {
-        textInputViewBottom.constant = heightOfKeyboard < -textInputHeight ? heightOfKeyboard + textInputHeight + buttonsHeight : 0
+        textInputViewBottom?.constant = heightOfKeyboard < -textInputHeight ? heightOfKeyboard + textInputHeight + buttonsHeight : 0
+        textInputViewHeight?.constant = textInputHeight
 
-        textInputViewHeight.constant = textInputHeight
-
-        controlsViewHeightConstraint.constant = buttonsHeight
+        controlsViewHeight?.constant = buttonsHeight
         keyboardAwareInputView.height = buttonsHeight + textInputHeight
         keyboardAwareInputView.invalidateIntrinsicContentSize()
 
@@ -378,7 +336,7 @@ final class ChatController: OverlayController {
 
             self.controlsView.isHidden = true
             self.updateSubcontrols(with: nil)
-            self.controlsViewHeightConstraint.constant = !self.buttons.isEmpty ? 250 : 0
+            self.controlsViewHeight?.constant = !self.buttons.isEmpty ? 250 : 0
             self.controlsViewDelegateDatasource.items = self.buttons
             self.controlsView.reloadData()
 
@@ -397,7 +355,7 @@ final class ChatController: OverlayController {
                 height = max(height, controlCell.frame.maxY)
             }
 
-            self.controlsViewHeightConstraint.constant = 0
+            self.controlsViewHeight?.constant = 0
             UIView.animate(withDuration: 0, delay: 0, animations: {
                 self.controlsView.layoutIfNeeded()
             }, completion: { completed in
@@ -408,7 +366,7 @@ final class ChatController: OverlayController {
                     self.buttonsHeight = height > 0 ? height + (2 * ChatController.buttonMargin) : 0
 
                     guard height > 0 else { return }
-                    self.controlsViewHeightConstraint.constant = height
+                    self.controlsViewHeight?.constant = height
 
                     UIView.animate(withDuration: 0.3, delay: 0.0, options: [.curveEaseIn, .beginFromCurrentState], animations: {
                         self.controlsView.layoutIfNeeded()
@@ -894,7 +852,7 @@ extension ChatController: ChatsFloatingHeaderViewDelegate {
 
     func messagesFloatingView(_: ChatsFloatingHeaderView, didPressPayButton _: UIButton) {
         view.layoutIfNeeded()
-        controlsViewHeightConstraint.constant = 0.0
+        controlsViewHeight?.constant = 0.0
 
         let paymentSendController = PaymentSendController()
         paymentSendController.delegate = self
@@ -904,6 +862,7 @@ extension ChatController: ChatsFloatingHeaderViewDelegate {
 }
 
 extension ChatController: PaymentSendControllerDelegate {
+    
     func paymentSendControllerDidFinish(valueInWei: NSDecimalNumber?) {
         defer {
             self.dismiss(animated: true)
@@ -997,7 +956,7 @@ extension ChatController: ControlViewActionDelegate {
         subcontrolsViewDelegateDatasource.items = []
         viewModel.currentButton = nil
 
-        subcontrolsViewHeightConstraint.constant = 0
+        subcontrolsViewHeight?.constant = 0
         subcontrolsView.backgroundColor = .clear
         subcontrolsView.isHidden = true
 
@@ -1010,7 +969,7 @@ extension ChatController: ControlViewActionDelegate {
 
     func showSubcontrolsMenu(button: SofaMessage.Button, completion: (() -> Void)? = nil) {
         controlsView.deselectButtons()
-        subcontrolsViewHeightConstraint.constant = view.frame.height
+        subcontrolsViewHeight?.constant = view.frame.height
         subcontrolsView.isHidden = true
 
         let controlCell = SubcontrolCell(frame: .zero)
@@ -1035,7 +994,7 @@ extension ChatController: ControlViewActionDelegate {
                 height += cell.frame.height
             }
 
-            self.subcontrolsViewHeightConstraint.constant = height
+            self.subcontrolsViewHeight?.constant = height
             self.subcontrolsView.isHidden = false
             self.view.layoutIfNeeded()
 
@@ -1057,8 +1016,9 @@ extension ChatController: ActiveNetworkDisplaying {
     }
 
     func requestLayoutUpdate() {
+        
         UIView.animate(withDuration: 0.2) {
-            self.tableView.contentInset = UIEdgeInsets(top: ChatsFloatingHeaderView.height + 64.0 + (self.activeNetworkView.heightConstraint?.constant ?? 0), left: 0, bottom: 0, right: 0)
+            self.updateContentInset()
             self.view.layoutIfNeeded()
         }
     }
