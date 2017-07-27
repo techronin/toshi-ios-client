@@ -209,12 +209,12 @@ class BrowseController: SearchableCollectionController {
                     let alertController = UIAlertController.errorAlert(error as NSError)
                     Navigator.presentModally(alertController)
                 }
-                
-                self.searchResultView.searchResults = searchText.isURL ? [] : apps
+
+                self.searchResultView.searchResults = apps
             }
         }
     }
-    
+
     fileprivate func showOpenURLButton() {
         openURLButton.isHidden = false
         openURLButtonTopAnchor.constant = searchBar.frame.minY - 20 + 64
@@ -254,17 +254,8 @@ extension BrowseController: UISearchBarDelegate {
         if searchText.isEmpty {
             searchResultView.searchResults = []
             hideOpenURLButtonIfNeeded()
-        } else {
-            AppsAPIClient.shared.search(searchText) { items, error in
-                if let error = error {
-                    let alertController = UIAlertController.errorAlert(error as NSError)
-                    Navigator.presentModally(alertController)
-                }
-                
-                self.searchResultView.searchResults = searchText.isURL ? [] : items
-            }
         }
-        
+
         NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(reload(searchText:)), object: searchText)
         perform(#selector(reload(searchText:)), with: searchText, afterDelay: 0.5)
     }
