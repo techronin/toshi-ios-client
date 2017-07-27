@@ -215,7 +215,9 @@ class BrowseController: SearchableCollectionController {
                     Navigator.presentModally(alertController)
                 }
 
-                self.searchResultView.searchResults = apps
+                if searchText == self.searchBar.text {
+                    self.searchResultView.searchResults = apps
+                }
             }
         }
     }
