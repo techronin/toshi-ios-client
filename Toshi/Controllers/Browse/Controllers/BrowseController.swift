@@ -198,11 +198,11 @@ class BrowseController: SearchableCollectionController {
     
     @objc
     fileprivate func reload(searchText: String) {
+        
         if searchText.isURL {
-            let title = NSAttributedString(string: searchText, attributes: self.openButtonAttributes)
-            self.openURLButton.setAttributedTitle(title)
-            self.showOpenURLButton()
-            
+            let title = NSAttributedString(string: searchText, attributes: openButtonAttributes)
+            openURLButton.setAttributedTitle(title)
+            showOpenURLButton()
         } else {
             AppsAPIClient.shared.search(searchText) { apps, error in
                 if let error = error {
@@ -210,24 +210,24 @@ class BrowseController: SearchableCollectionController {
                     Navigator.presentModally(alertController)
                 }
                 
-                self.searchResultView.searchResults = apps
+                self.searchResultView.searchResults = searchText.isURL ? [] : apps
             }
         }
     }
     
     fileprivate func showOpenURLButton() {
-        self.openURLButton.isHidden = false
-        self.openURLButtonTopAnchor.constant = self.searchBar.frame.minY - 20 + 64
+        openURLButton.isHidden = false
+        openURLButtonTopAnchor.constant = searchBar.frame.minY - 20 + 64
         UIView.animate(withDuration: 0.25) {
             self.collectionView.layoutIfNeeded()
         }
     }
     
     fileprivate func hideOpenURLButtonIfNeeded() {
-        guard self.openURLButtonTopAnchor.constant == 64 else { return }
+        guard openURLButtonTopAnchor.constant == 64 else { return }
         
-        self.openURLButton.isHidden = true
-        self.openURLButtonTopAnchor.constant = -self.searchBar.frame.maxY + 64
+        openURLButton.isHidden = true
+        openURLButtonTopAnchor.constant = -searchBar.frame.maxY + 64
         UIView.animate(withDuration: 0.25) {
             self.collectionView.layoutIfNeeded()
             self.openURLButton.setAttributedTitle(nil)
@@ -236,12 +236,12 @@ class BrowseController: SearchableCollectionController {
     
     @objc
     fileprivate func didTapOpenURLButton() {
-        guard let string = self.searchController.searchBar.text, let url = URL(string: string) else { return }
+        guard let string = searchController.searchBar.text, let url = URL(string: string) else { return }
         
         let sofaController = SOFAWebController()
         
         sofaController.load(url: url)
-        self.navigationController?.pushViewController(sofaController, animated: true)
+        navigationController?.pushViewController(sofaController, animated: true)
     }
 }
 
@@ -260,8 +260,8 @@ extension BrowseController: UISearchBarDelegate {
                     let alertController = UIAlertController.errorAlert(error as NSError)
                     Navigator.presentModally(alertController)
                 }
-
-                self.searchResultView.searchResults = items
+                
+                self.searchResultView.searchResults = searchText.isURL ? [] : items
             }
         }
         
