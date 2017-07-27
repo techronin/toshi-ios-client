@@ -642,17 +642,21 @@ extension ChatController: UITableViewDataSource {
         }
 
         guard let nextMessage = viewModel.messageModels.element(at: indexPath.row + 1) else {
-            // this is the last message
+            // this is the last cell
             return currentMessage.isOutgoing == previousMessage.isOutgoing ? .bottom : .single
         }
 
         if currentMessage.isOutgoing != previousMessage.isOutgoing, currentMessage.isOutgoing != nextMessage.isOutgoing {
+            // the previous and next messages are not from the same user
             return .single
         } else if currentMessage.isOutgoing == previousMessage.isOutgoing, currentMessage.isOutgoing == nextMessage.isOutgoing {
+            // the previous and next messages are from the same user
             return .middle
         } else if currentMessage.isOutgoing == previousMessage.isOutgoing {
+            // the previous message is from the same user but the next message is not
             return .bottom
         } else {
+            // the next message is from the same user but the previous message is not
             return .top
         }
     }
