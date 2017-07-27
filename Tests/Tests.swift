@@ -4,7 +4,7 @@ import UIKit
 class Tests: XCTestCase {
 
     func testExample() {
-        let expect = self.expectation(description: "request login with email")
+        let expect = self.expectation(description: "get ethereum rate")
         EthereumAPIClient.shared.getRate { decimal in
             XCTAssertNotNil(decimal)
             expect.fulfill()
