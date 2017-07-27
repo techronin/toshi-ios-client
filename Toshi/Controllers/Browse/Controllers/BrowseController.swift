@@ -49,22 +49,22 @@ class BrowseController: SearchableCollectionController {
 
         return view
     }()
-    
+
     fileprivate lazy var openURLButton: LaunchAppButton = {
         let view = LaunchAppButton(withAutoLayout: true)
         view.addTarget(self, action: #selector(self.didTapOpenURLButton), for: .touchUpInside)
         view.isHidden = true
-        
+
         return view
     }()
-    
+
     fileprivate lazy var openButtonAttributes: [String: Any] = {
         let paragraph = NSParagraphStyle.default.mutableCopy() as! NSMutableParagraphStyle
         paragraph.alignment = .left
-        
+
         return [NSForegroundColorAttributeName: Theme.tintColor, NSFontAttributeName: Theme.regular(size: 14)]
     }()
-    
+
     fileprivate var openURLButtonTopAnchor: NSLayoutConstraint!
 
     private lazy var layout: UICollectionViewFlowLayout = {
@@ -111,7 +111,7 @@ class BrowseController: SearchableCollectionController {
         searchResultView.left(to: view)
         searchResultView.bottom(to: view)
         searchResultView.right(to: view)
-        
+
         openURLButton.height(44)
         openURLButton.left(to: view).isActive = true
         openURLButton.right(to: view).isActive = true
@@ -195,10 +195,10 @@ class BrowseController: SearchableCollectionController {
             self.collectionView.collectionViewLayout.invalidateLayout()
         }
     }
-    
+
     @objc
     fileprivate func reload(searchText: String) {
-        
+
         if searchText.isURL {
             let title = NSAttributedString(string: searchText, attributes: openButtonAttributes)
             openURLButton.setAttributedTitle(title)
@@ -222,10 +222,10 @@ class BrowseController: SearchableCollectionController {
             self.collectionView.layoutIfNeeded()
         }
     }
-    
+
     fileprivate func hideOpenURLButtonIfNeeded() {
         guard openURLButtonTopAnchor.constant == 64 else { return }
-        
+
         openURLButton.isHidden = true
         openURLButtonTopAnchor.constant = -searchBar.frame.maxY + 64
         UIView.animate(withDuration: 0.25) {
@@ -233,13 +233,13 @@ class BrowseController: SearchableCollectionController {
             self.openURLButton.setAttributedTitle(nil)
         }
     }
-    
+
     @objc
     fileprivate func didTapOpenURLButton() {
         guard let string = searchController.searchBar.text, let url = URL(string: string) else { return }
-        
+
         let sofaController = SOFAWebController()
-        
+
         sofaController.load(url: url)
         navigationController?.pushViewController(sofaController, animated: true)
     }
@@ -256,8 +256,10 @@ extension BrowseController: UISearchBarDelegate {
             hideOpenURLButtonIfNeeded()
         }
 
-        NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(reload(searchText:)), object: searchText)
-        perform(#selector(reload(searchText:)), with: searchText, afterDelay: 0.5)
+//        NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(reload(searchText:)), object: nil)
+//        perform(#selector(reload(searchText:)), with: searchText, afterDelay: 0)
+        
+        reload(searchText: searchText)
     }
 
     func searchBarCancelButtonClicked(_: UISearchBar) {
