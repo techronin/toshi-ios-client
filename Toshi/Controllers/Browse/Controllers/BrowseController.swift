@@ -202,8 +202,13 @@ class BrowseController: SearchableCollectionController {
         if searchText.isURL {
             let title = NSAttributedString(string: searchText, attributes: openButtonAttributes)
             openURLButton.setAttributedTitle(title)
+
+            searchResultView.searchResults = []
+
             showOpenURLButton()
         } else {
+            hideOpenURLButtonIfNeeded()
+
             AppsAPIClient.shared.search(searchText) { apps, error in
                 if let error = error {
                     let alertController = UIAlertController.errorAlert(error as NSError)
@@ -256,9 +261,6 @@ extension BrowseController: UISearchBarDelegate {
             hideOpenURLButtonIfNeeded()
         }
 
-//        NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(reload(searchText:)), object: nil)
-//        perform(#selector(reload(searchText:)), with: searchText, afterDelay: 0)
-        
         reload(searchText: searchText)
     }
 
