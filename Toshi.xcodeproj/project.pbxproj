@@ -1175,6 +1175,7 @@
 		A9E1DCE51F1E5C64001A4ABE /* MessagesStatusCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9E1DCE41F1E5C64001A4ABE /* MessagesStatusCell.swift */; };
 		A9E65DCE1E76B4A600304123 /* NSLayoutConstraint+Additions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9E65DCD1E76B4A600304123 /* NSLayoutConstraint+Additions.swift */; };
 		A9E777531F2A0BC700FB18F1 /* LaunchAppButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9E777521F2A0BC700FB18F1 /* LaunchAppButton.swift */; };
+		A9E777541F2A1F1200FB18F1 /* LaunchAppButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9E777521F2A0BC700FB18F1 /* LaunchAppButton.swift */; };
 		A9ED6CC81E8282D000160637 /* SignInController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9ED6CC71E8282D000160637 /* SignInController.swift */; };
 		A9ED6CCD1E82B57E00160637 /* InputField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9ED6CCC1E82B57E00160637 /* InputField.swift */; };
 		A9ED6CCE1E82B57E00160637 /* InputField.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9ED6CCC1E82B57E00160637 /* InputField.swift */; };
@@ -4459,6 +4460,7 @@
 				9F4D80851EEA8B4500FB5361 /* AttachmentCameraView.m in Sources */,
 				9F4D813D1EEA8B4600FB5361 /* PhotoEditorBlurToolView.m in Sources */,
 				9F4D7EC71EEA8B4500FB5361 /* OverlayControllerWindow.m in Sources */,
+				A9E777541F2A1F1200FB18F1 /* LaunchAppButton.swift in Sources */,
 				9F4D7EF71EEA8B4500FB5361 /* ExposureTool.m in Sources */,
 				9F4D7EE71EEA8B4500FB5361 /* TGMediaAvatarMenuMixin.m in Sources */,
 				9F4D816F1EEA8B4600FB5361 /* PhotoTextSettingsView.m in Sources */,
