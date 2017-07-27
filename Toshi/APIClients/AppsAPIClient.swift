@@ -21,7 +21,7 @@ import UIKit
 public class AppsAPIClient: NSObject, CacheExpiryDefault {
     static let shared: AppsAPIClient = AppsAPIClient()
 
-    private var teapot: Teapot
+    open var teapot: Teapot
 
     private var imageCache = try! Cache<UIImage>(name: "appImageCache")
 
