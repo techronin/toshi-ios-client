@@ -26,7 +26,7 @@ final class ChatController: OverlayController {
     fileprivate static let buttonMargin: CGFloat = 10
 
     private(set) var thread: TSThread
-    
+
     fileprivate var menuSheetController: MenuSheetController?
     fileprivate var isVisible: Bool = false
 
@@ -610,7 +610,7 @@ extension ChatController: UITableViewDataSource {
             cell.selectionDelegate = self
 
             let isPaymentOpen = (message.signalMessage?.paymentState ?? .none) == .none
-            let isMessageActionable = message.isActionable ?? false
+            let isMessageActionable = message.isActionable
 
             let isOpenPaymentRequest = isMessageActionable && isPaymentOpen
             if isOpenPaymentRequest {
@@ -625,19 +625,36 @@ extension ChatController: UITableViewDataSource {
     }
 
     private func positionType(for indexPath: IndexPath) -> MessagePositionType {
-        guard let currentMessage = viewModel.messageModels.element(at: indexPath.row) else { return .top }
-        guard let previousMessage = viewModel.messageModels.element(at: indexPath.row - 1) else { return .top }
+
+        guard let currentMessage = viewModel.messageModels.element(at: indexPath.row) else {
+            // there are no cells
+            return .single
+        }
+
+        guard let previousMessage = viewModel.messageModels.element(at: indexPath.row - 1) else {
+            guard let nextMessage = viewModel.messageModels.element(at: indexPath.row + 1) else {
+                // this is the first and only cell
+                return .single
+            }
+
+            // this is the first cell of many
+            return currentMessage.isOutgoing == nextMessage.isOutgoing ? .top : .single
+        }
+
         guard let nextMessage = viewModel.messageModels.element(at: indexPath.row + 1) else {
-            return previousMessage.isOutgoing == currentMessage.isOutgoing ? .bottom : .top
+            // this is the last message
+            return currentMessage.isOutgoing == previousMessage.isOutgoing ? .bottom : .single
         }
 
-        if currentMessage.isOutgoing == previousMessage.isOutgoing, currentMessage.isOutgoing == nextMessage.isOutgoing {
+        if currentMessage.isOutgoing != previousMessage.isOutgoing, currentMessage.isOutgoing != nextMessage.isOutgoing {
+            return .single
+        } else if currentMessage.isOutgoing == previousMessage.isOutgoing, currentMessage.isOutgoing == nextMessage.isOutgoing {
             return .middle
-        } else if currentMessage.isOutgoing == previousMessage.isOutgoing, currentMessage.isOutgoing != nextMessage.isOutgoing {
+        } else if currentMessage.isOutgoing == previousMessage.isOutgoing {
             return .bottom
+        } else {
+            return .top
         }
-
-        return .top
     }
 }
 

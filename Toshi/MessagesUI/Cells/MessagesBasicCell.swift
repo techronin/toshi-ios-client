@@ -3,6 +3,7 @@ import UIKit
 import TinyConstraints
 
 enum MessagePositionType {
+    case single
     case top
     case middle
     case bottom
@@ -66,9 +67,13 @@ class MessagesBasicCell: UITableViewCell {
         }
     }
 
-    var positionType: MessagePositionType = .top {
+    var positionType: MessagePositionType = .single {
         didSet {
-            contentLayoutGuideTopConstraint?.constant = positionType == .top ? 8 : 4
+            let first = positionType == .single || positionType == .top
+            contentLayoutGuideTopConstraint?.constant = first ? 8 : 4
+            
+            let hidden = positionType == .top || positionType == .middle || isOutGoing
+            avatarImageView.isHidden = hidden
             
             messagesCornerView.setImage(for: positionType, isOutGoing: isOutGoing, isPayment: self is MessagesPaymentCell)
         }

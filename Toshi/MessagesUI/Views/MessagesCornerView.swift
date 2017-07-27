@@ -2,10 +2,6 @@ import Foundation
 import UIKit
 
 enum MessagesCornerType {
-    case cornerBottomOutgoing
-    case cornerBottomOutlineOutgoing
-    case cornerBottomOutline
-    case cornerBottom
     case cornerMiddleOutgoing
     case cornerMiddleOutlineOutgoing
     case cornerMiddleOutline
@@ -18,10 +14,6 @@ enum MessagesCornerType {
 
 class MessagesCornerView: UIImageView {
 
-    private lazy var cornerBottomOutgoingImage: UIImage? = self.stretchableImage(with: "corner-bottom-outgoing")
-    private lazy var cornerBottomOutlineOutgoingImage: UIImage? = self.stretchableImage(with: "corner-bottom-outline-outgoing")
-    private lazy var cornerBottomOutlineImage: UIImage? = self.stretchableImage(with: "corner-bottom-outline")
-    private lazy var cornerBottomImage: UIImage? = self.stretchableImage(with: "corner-bottom")
     private lazy var cornerMiddleOutgoingImage: UIImage? = self.stretchableImage(with: "corner-middle-outgoing")
     private lazy var cornerMiddleOutlineOutgoingImage: UIImage? = self.stretchableImage(with: "corner-middle-outline-outgoing")
     private lazy var cornerMiddleOutlineImage: UIImage? = self.stretchableImage(with: "corner-middle-outline")
@@ -39,14 +31,6 @@ class MessagesCornerView: UIImageView {
             }
 
             switch type {
-            case .cornerBottomOutgoing:
-                image = cornerBottomOutgoingImage
-            case .cornerBottomOutlineOutgoing:
-                image = cornerBottomOutlineOutgoingImage
-            case .cornerBottomOutline:
-                image = cornerBottomOutlineImage
-            case .cornerBottom:
-                image = cornerBottomImage
             case .cornerMiddleOutgoing:
                 image = cornerMiddleOutgoingImage
             case .cornerMiddleOutlineOutgoing:
@@ -75,21 +59,17 @@ class MessagesCornerView: UIImageView {
 
         if isPayment {
             switch positionType {
-            case .top:
+            case .single, .top:
                 type = isOutGoing ? .cornerTopOutlineOutgoing : .cornerTopOutline
-            case .middle:
+            case .middle, .bottom:
                 type = isOutGoing ? .cornerMiddleOutlineOutgoing : .cornerMiddleOutline
-            case .bottom:
-                type = isOutGoing ? .cornerBottomOutlineOutgoing : .cornerBottomOutline
             }
         } else {
             switch positionType {
-            case .top:
+            case .single, .top:
                 type = isOutGoing ? .cornerTopOutgoing : .cornerTop
-            case .middle:
+            case .middle, .bottom:
                 type = isOutGoing ? .cornerMiddleOutgoing : .cornerMiddle
-            case .bottom:
-                type = isOutGoing ? .cornerBottomOutgoing : .cornerBottom
             }
         }
     }
