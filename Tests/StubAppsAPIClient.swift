@@ -13,20 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import XCTest
 import UIKit
 
-class Tests: XCTestCase {
+class StubAppsApiClient: AppsAPIClient {
 
-    func testExample() {
-        let expect = self.expectation(description: "Get ethereum rare")
-        EthereumAPIClient.shared.getRate { decimal in
-            XCTAssertNotNil(decimal)
-            expect.fulfill()
-
-         }
-
-        self.waitForExpectations(timeout: 100)
-
-    }
 }
