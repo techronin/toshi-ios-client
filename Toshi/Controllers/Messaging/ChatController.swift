@@ -24,17 +24,16 @@ final class ChatController: OverlayController {
 
     fileprivate static let subcontrolsViewWidth: CGFloat = 228.0
     fileprivate static let buttonMargin: CGFloat = 10
-    
+
     private(set) var thread: TSThread
     
-    fileprivate var textLayoutQueue = DispatchQueue(label: "com.tokenbrowser.token.layout", qos: DispatchQoS(qosClass: .default, relativePriority: 0))
     fileprivate var menuSheetController: MenuSheetController?
     fileprivate var isVisible: Bool = false
-    
+
     fileprivate lazy var viewModel: ChatViewModel = ChatViewModel(output: self, thread: self.thread)
     fileprivate lazy var imagesCache: NSCache<NSString, UIImage> = NSCache()
     fileprivate lazy var disposable: SMetaDisposable = SMetaDisposable()
-    
+
     fileprivate var buttons: [SofaMessage.Button] = [] {
         didSet {
             adjustToNewButtons()
@@ -99,7 +98,7 @@ final class ChatController: OverlayController {
         view.delegate = self
         view.separatorStyle = .none
         view.keyboardDismissMode = .interactive
-        
+
         view.register(MessagesImageCell.self)
         view.register(MessagesPaymentCell.self)
         view.register(MessagesTextCell.self)
@@ -109,7 +108,7 @@ final class ChatController: OverlayController {
 
     fileprivate lazy var textInputView: ChatInputTextPanel = ChatInputTextPanel(withAutoLayout: true)
     fileprivate lazy var activityView: UIActivityIndicatorView = self.defaultActivityIndicator()
-    
+
     fileprivate lazy var controlsView: ControlsCollectionView = {
         let view = ControlsCollectionView()
         view.clipsToBounds = true
@@ -118,7 +117,7 @@ final class ChatController: OverlayController {
         view.delegate = self.controlsViewDelegateDatasource
         view.dataSource = self.controlsViewDelegateDatasource
         view.contentInset = UIEdgeInsets(top: 10, left: 0, bottom: 0, right: 0)
-        
+
         view.register(ControlCell.self)
 
         return view
@@ -145,7 +144,7 @@ final class ChatController: OverlayController {
     private var textInputViewHeight: NSLayoutConstraint?
     fileprivate var controlsViewHeight: NSLayoutConstraint?
     fileprivate var subcontrolsViewHeight: NSLayoutConstraint?
-    
+
     fileprivate lazy var controlsViewDelegateDatasource: ControlsViewDelegateDataSource = {
         let controlsViewDelegateDatasource = ControlsViewDelegateDataSource()
         controlsViewDelegateDatasource.actionDelegate = self
@@ -176,12 +175,12 @@ final class ChatController: OverlayController {
     required init?(coder _: NSCoder) {
         fatalError()
     }
-    
+
     func updateContentInset() {
         let activeNetworkViewHeight = activeNetworkView.heightConstraint?.constant ?? 0
         let topInset = ChatsFloatingHeaderView.height + 64.0 + activeNetworkViewHeight
         let bottomInset = textInputHeight
-        
+
         tableView.contentInset = UIEdgeInsets(top: topInset + 2, left: 0, bottom: bottomInset + buttonsHeight + 10, right: 0)
         tableView.scrollIndicatorInsets = UIEdgeInsets(top: topInset, left: 0, bottom: bottomInset, right: 0)
     }
@@ -198,20 +197,20 @@ final class ChatController: OverlayController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         view.backgroundColor = Theme.viewBackgroundColor
-        
+
         addSubviewsAndConstraints()
-        
+
         textInputView.delegate = self
-        
+
         controlsViewDelegateDatasource.controlsCollectionView = controlsView
         subcontrolsViewDelegateDatasource.subcontrolsCollectionView = subcontrolsView
-        
+
         hideSubcontrolsMenu()
         setupActivityIndicator()
         setupActiveNetworkView(hidden: true)
-        
+
         viewModel.fetchAndUpdateBalance { balance, error in
             if let error = error {
                 let alertController = UIAlertController.errorAlert(error as NSError)
@@ -236,7 +235,7 @@ final class ChatController: OverlayController {
         if let url = viewModel.contactAvatarUrl {
             avatarImageView.setImage(from: url)
         }
-        
+
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: avatarImageView)
     }
 
@@ -266,27 +265,27 @@ final class ChatController: OverlayController {
         view.addSubview(controlsView)
         view.addSubview(subcontrolsView)
         view.addSubview(ethereumPromptView)
-        
+
         tableView.top(to: view)
         tableView.left(to: view)
         tableView.bottom(to: textInputView)
         tableView.right(to: view)
-        
+
         textInputView.left(to: view)
         textInputViewBottom = textInputView.bottom(to: view)
         textInputView.right(to: view)
         textInputViewHeight = textInputView.height(ChatInputTextPanel.defaultHeight)
-        
+
         controlsView.left(to: view, offset: 16)
         controlsView.bottomToTop(of: textInputView)
         controlsView.right(to: view, offset: -16)
         controlsViewHeight = controlsView.height(0)
-        
+
         subcontrolsView.left(to: view, offset: 16)
         subcontrolsView.bottomToTop(of: controlsView)
         subcontrolsView.width(ChatController.subcontrolsViewWidth)
         subcontrolsViewHeight = subcontrolsView.height(0)
-        
+
         ethereumPromptView.top(to: view, offset: 64)
         ethereumPromptView.left(to: view)
         ethereumPromptView.right(to: view)
@@ -864,7 +863,7 @@ extension ChatController: ChatsFloatingHeaderViewDelegate {
 }
 
 extension ChatController: PaymentSendControllerDelegate {
-    
+
     func paymentSendControllerDidFinish(valueInWei: NSDecimalNumber?) {
         defer {
             self.dismiss(animated: true)
@@ -930,7 +929,7 @@ extension ChatController: KeyboardAwareAccessoryViewDelegate {
 }
 
 extension ChatController: ControlViewActionDelegate {
-    
+
     func controlsCollectionViewDidSelectControl(_ button: SofaMessage.Button) {
         switch button.type {
         case .button:
@@ -1019,7 +1018,7 @@ extension ChatController: ActiveNetworkDisplaying {
     }
 
     func requestLayoutUpdate() {
-        
+
         UIView.animate(withDuration: 0.2) {
             self.updateContentInset()
             self.view.layoutIfNeeded()
