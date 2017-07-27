@@ -1,5 +1,6 @@
 import XCTest
 import UIKit
+import Teapot
 
 class MockedTests: XCTestCase {
     var subject: AppsAPIClient!
@@ -8,8 +9,9 @@ class MockedTests: XCTestCase {
     override func setUp() {
         super.setUp()
 
-        subject = AppsAPIClient()
-        subject.teapot.session = session
+        let mockTeapot = Teapot(baseURL: URL(string: "https://token-id-service-development.herokuapp.com")!)
+        mockTeapot.session = session
+        subject = AppsAPIClient(mockTeapot: mockTeapot)
     }
 
     func test_GET_RequestsTheURL() {

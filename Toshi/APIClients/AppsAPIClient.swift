@@ -21,12 +21,17 @@ import UIKit
 public class AppsAPIClient: NSObject, CacheExpiryDefault {
     static let shared: AppsAPIClient = AppsAPIClient()
 
-    open var teapot: Teapot
+    private var teapot: Teapot
 
     private var imageCache = try! Cache<UIImage>(name: "appImageCache")
 
     override init() {
         teapot = Teapot(baseURL: URL(string: TokenDirectoryServiceBaseURLPath)!)
+    }
+
+    convenience init(mockTeapot: Teapot) {
+        self.init()
+        self.teapot = mockTeapot
     }
 
     func getTopRatedApps(limit: Int = 10, completion: @escaping (_ apps: [TokenUser]?, _ error: Error?) -> Void) {
