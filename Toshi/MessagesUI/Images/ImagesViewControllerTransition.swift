@@ -146,6 +146,10 @@ class ImagesViewControllerTransition: NSObject, UIViewControllerAnimatedTransiti
 
         scalingImageView.center = CGPoint(x: beginFrame.width / 2, y: beginFrame.height / 2)
         scalingImageView.transform = isPresenting ? scale : .identity
+        
+        UIView.animate(withDuration: 0.1, delay: isPresenting ? 0 : (duration - 0.1), options: [.curveEaseIn], animations: {
+            cornerView.alpha = self.isPresenting ? 0 : 1
+        }, completion: nil)
 
         UIView.animate(withDuration: duration, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: .easeOutFromCurrentStateWithUserInteraction, animations: {
             fadingBackground.alpha = self.isPresenting ? 1 : 0
@@ -154,7 +158,6 @@ class ImagesViewControllerTransition: NSObject, UIViewControllerAnimatedTransiti
 
         UIView.animate(withDuration: duration, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0, options: .easeInOutFromCurrentStateWithUserInteraction, animations: {
             clippingContainer.frame = endFrame
-            cornerView.alpha = self.isPresenting ? 0 : 1
             cornerView.frame = endFrame
             mask.frame = self.isPresenting ? imageFrame : messagesFrame
             scalingImageView.center = CGPoint(x: endFrame.width / 2, y: endFrame.height / 2)
